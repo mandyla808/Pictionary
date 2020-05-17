@@ -5,7 +5,8 @@ import Browser
 import Html exposing (Html)
 import Debug
 import Types exposing (..)
-
+import Random exposing (Generator)
+import Random.List
 --updatePlayer
 --Inputs: players player
 --Will search through the list of players
@@ -47,7 +48,10 @@ playerUpdate model player guess =
           in
             {model | players = (updatePlayer model.players updatedPlayer)}
 
---
+--Updates the model when the round is over
+--Makes all players unable to guess
+--Stops the drawer from drawing
+--Resets all the player's list of guesses
 roundOverUpdate: Model -> Model
 roundOverUpdate model =
   let
@@ -59,3 +63,16 @@ roundOverUpdate model =
              roundPlaying = False,
              players = List.map playerRoundReset model.players
             }
+
+
+newWordUpdate : Model -> Maybe String -> List String -> Model
+newWordUpdate model cw ws =
+  {model | currentWord = cw,
+           unusedWords = ws
+            }
+
+newDrawerUpdate : Model -> Maybe Player -> Model
+newDrawerUpdate model player =
+  case player of
+    Nothing -> model
+    Just _ -> {model | currentDrawer = player}

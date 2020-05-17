@@ -23,20 +23,21 @@ type Msg =
   None |
   Tick Posix |
   Guess Player String|
---  CorrectGuess Player |
---  WrongGuess Player |
   RoundOver |
-  NextRound
+  NextRound |
+  NewWord (Maybe String, List String) |
+  NewDrawer (Maybe Player, List Player)
 
 -- MODEL
 type alias Model =
   { players : List Player
   , currentWord : Maybe String
+  , unusedWords : List String
   , whiteboardClean : Bool
   , currentDrawer : Maybe Player
   , roundNumber : Int
   , roundTime : Int
-  , roundPlaying : Bool 
+  , roundPlaying : Bool
   }
 
 --FLAGS

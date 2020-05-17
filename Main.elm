@@ -4,9 +4,13 @@ module Main exposing (..)
 import Browser
 import Html exposing (Html)
 import Debug
-import Types exposing(..)
+import Random
 import Time exposing (Posix)
+import Random.List
+
+import Types exposing(..)
 import Updates exposing (..)
+import Words exposing (..)
 
 ----------------------------------------------------------------------
 main : Program Flags Model Msg
@@ -27,6 +31,7 @@ initModel : Model
 initModel =
   { players = []
   , currentWord = Nothing
+  , unusedWords = wordList
   , whiteboardClean = True
   , currentDrawer = Nothing
   , roundNumber = 1
@@ -49,10 +54,14 @@ update msg model =
     None -> (model, Cmd.none)
     Tick t -> ({model | roundTime = model.roundTime-1}, Cmd.none)
     Guess player guess -> (playerUpdate model player guess, Cmd.none)
-  --  CorrectGuess player -> (initModel, Cmd.none)
-  --  WrongGuess player -> (initModel, Cmd.none)
+
     RoundOver -> (roundOverUpdate model, Cmd.none)
-    NextRound -> (initModel, Cmd.none)
+    NextRound -> (model, Cmd.batch[
+     Random.generate NewWord (Random.List.choose model.unusedWords),
+     Random.generate NewDrawer (Random.List.choose model.players)
+     ])
+    NewWord (newWord, words) -> (newWordUpdate model newWord words, Cmd.none)
+    NewDrawer (drawer, _) -> (newDrawerUpdate model drawer, Cmd.none)
 
 --VIEW
 view : Model -> Html Msg
