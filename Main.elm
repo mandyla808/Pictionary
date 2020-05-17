@@ -7,6 +7,7 @@ import Debug
 import Random
 import Time exposing (Posix)
 import Random.List
+import Task.Extra exposing (message)
 
 import Types exposing(..)
 import Updates exposing (..)
@@ -52,9 +53,10 @@ update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
   case msg of
     None -> (model, Cmd.none)
-    Tick t -> ({model | roundTime = model.roundTime-1}, Cmd.none)
+    Tick t -> ({model | roundTime = model.roundTime-1},
+      if model.roundTime == 1 then message RoundOver
+        else Cmd.none)
     Guess player guess -> (playerUpdate model player guess, Cmd.none)
-
     RoundOver -> (roundOverUpdate model, Cmd.none)
     NextRound -> (model, Cmd.batch[
      Random.generate NewWord (Random.List.choose model.unusedWords),
