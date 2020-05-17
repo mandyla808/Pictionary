@@ -26,7 +26,8 @@ type Msg =
   RoundOver |
   NextRound |
   NewWord (Maybe String, List String) |
-  NewDrawer (Maybe Player, List Player) 
+  NewDrawer (Maybe Player, List Player) |
+  StartRound (Maybe String, List String) (Maybe Player, List Player)
 
 -- MODEL
 type alias Model =
@@ -38,6 +39,7 @@ type alias Model =
   , roundNumber : Int
   , roundTime : Int
   , roundPlaying : Bool
+  , frames : Int
   }
 
 --FLAGS
