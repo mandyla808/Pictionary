@@ -38,6 +38,11 @@ initModel =
   , roundNumber = 1
   , roundTime = 60
   , roundPlaying = False -- Is the round still on?
+  , pending = Array.empty
+  , toDraw = []
+  , drawingPointer = Nothing
+  , color = Color.black
+  , size = 20
   }
 
 --SUBSCRIPTIONS

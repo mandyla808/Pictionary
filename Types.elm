@@ -5,6 +5,11 @@ import Browser
 import Html exposing (Html)
 import Debug
 import Time exposing (Posix)
+import Color exposing (Color)
+import Canvas exposing (..)
+import Canvas.Settings exposing (..)
+import Canvas.Settings.Advanced exposing (..)
+import Canvas.Settings.Line exposing (..)
 
 
 ----------------------------------------------------------------------
@@ -17,6 +22,11 @@ type alias Player =
   , guesses : List String
   , isGuessing : Bool
   , isDrawing : Bool
+  }
+  
+type alias DrawingPointer =
+  { previousMidpoint: Point
+  , lastPoint: Point
   }
 
 type Msg =
@@ -39,7 +49,11 @@ type alias Model =
   , roundNumber : Int
   , roundTime : Int
   , roundPlaying : Bool
-  , frames : Int
+  , pending : Array Renderable
+  , toDraw : List Renderable
+  , drawingPointer : Maybe DrawingPointer
+  , color : Color
+  , size : Int
   }
 
 --FLAGS
