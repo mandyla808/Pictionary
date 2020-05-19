@@ -38,9 +38,9 @@ initModel =
   , roundNumber = 1
   , roundTime = 60
   , roundPlaying = False -- Is the round still on?
-  , pending = Array.empty
-  , toDraw = []
-  , drawingPointer = Nothing
+  , segments = Array.empty
+  , drawnSegments = []
+  , tracer = Nothing
   , color = Color.black
   , size = 20
   }
@@ -50,7 +50,6 @@ subscriptions : Model -> Sub Msg
 subscriptions model =
   Sub.batch
   [ Time.every 1000 Tick
-
   ]
 
 --UPDATE
@@ -60,7 +59,7 @@ update msg model =
     None -> (model, Cmd.none)
     Tick t -> ({model | roundTime = model.roundTime-1},
       if model.roundTime == 1 then message RoundOver
-        else Cmd.none)
+        else (drawSegments model))
     Guess player guess -> (playerUpdate model player guess, Cmd.none)
     RoundOver -> (roundOverUpdate model, Cmd.none)
     NextRound -> (model, Cmd.batch[
@@ -69,6 +68,8 @@ update msg model =
      ])
     NewWord (newWord, words) -> (newWordUpdate model newWord words, Cmd.none)
     NewDrawer (drawer, _) -> (newDrawerUpdate model drawer, Cmd.none)
+
+drawSegments : 
 
 --VIEW
 view : Model -> Html Msg

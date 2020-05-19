@@ -23,9 +23,9 @@ type alias Player =
   , isGuessing : Bool
   , isDrawing : Bool
   }
-  
-type alias DrawingPointer =
-  { previousMidpoint: Point
+
+type alias Trace =
+  { prevMidpoint: Point
   , lastPoint: Point
   }
 
@@ -49,9 +49,9 @@ type alias Model =
   , roundNumber : Int
   , roundTime : Int
   , roundPlaying : Bool
-  , pending : Array Renderable
-  , toDraw : List Renderable
-  , drawingPointer : Maybe DrawingPointer
+  , segments : Array Renderable
+  , drawnSegments : List Renderable
+  , tracer : Maybe Trace
   , color : Color
   , size : Int
   }
