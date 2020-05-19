@@ -25,8 +25,8 @@ type alias Player =
   }
 
 type alias Trace =
-  { prevMidpoint: Point
-  , lastPoint: Point
+  { prevMidpoint: Canvas.Point
+  , lastPoint: Canvas.Point
   }
 
 type Msg
@@ -38,9 +38,9 @@ type Msg
   | NewDrawer (Maybe Player, List Player)
   | StartRound
   | RestPeriod
-  | BeginDraw
-  | ContDraw
-  | EndDraw
+  | BeginDraw Canvas.Point
+  | ContDraw Canvas.Point
+  | EndDraw Canvas.Point
 
 -- MODEL
 type alias Model =

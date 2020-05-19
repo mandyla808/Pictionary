@@ -8,6 +8,10 @@ import Types exposing (..)
 import Random exposing (Generator)
 import Random.List
 import Array
+import Canvas
+import Canvas.Settings.Line
+import Canvas.Settings
+import Color
 --updatePlayer
 --Inputs: players player
 --Will search through the list of players
@@ -101,28 +105,30 @@ drawSegments model =
         ,  segments = Array.empty}
 
 
-addSegment : Point -> Trace -> Model -> Model
+addSegment :  Canvas.Point -> Trace -> Model -> Model
 addSegment p t model =
   let
     newPoint =
       case (p, t.lastPoint) of
         ((p_x, p_y), (t_x, t_y)) ->
-          (p_x + (t_x - p_x) / 2 , p_y + (t_y = p_y) / 2)
+          (p_x + (t_x - p_x) / 2 , p_y + (t_y - p_y) / 2)
   in
     { model | tracer = Just { prevMidpoint = newPoint , lastPoint = p }
-            , segments = Array.push
+            , segments = (Array.push
               (Canvas.shapes
-                [lineWidth 10.0 , stroke model.color]
+                [ Canvas.Settings.Line.lineWidth 50.0
+                , Canvas.Settings.stroke model.color]
                 [Canvas.path t.prevMidpoint [Canvas.quadraticCurveTo t.lastPoint newPoint] ]
-              )
+              ) model.segments)
     }
 
-endSegment : Point -> Trace -> Model -> Model
+endSegment :  Canvas.Point -> Trace -> Model -> Model
 endSegment p t model =
     { model | tracer = Nothing
-            , segments = Array.push
+            , segments = (Array.push
               (Canvas.shapes
-                [lineWidth 10.0 , stroke model.color]
+                [ Canvas.Settings.Line.lineWidth 50.0
+                , Canvas.Settings.stroke model.color]
                 [Canvas.path t.prevMidpoint [Canvas.quadraticCurveTo t.lastPoint p] ]
-              )
+              ) model.segments)
     }
