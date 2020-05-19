@@ -76,7 +76,7 @@ update msg model =
         else Cmd.none)
     Guess player guess ->
       (playerUpdate model player guess, Cmd.none)
-    RoundOver ->  --need to set tracer to Nothing
+    RoundOver ->
       (roundOverUpdate model, toCmd RestPeriod)
     RestPeriod ->
       ({model | restSeconds = 1 + model.restSeconds },
@@ -91,7 +91,7 @@ update msg model =
         Random.generate NewWord (Random.List.choose model.unusedWords),
         Random.generate NewDrawer (Random.List.choose model.players)
         ])
-    BeginDraw point ->  --need to add to Msg type def
+    BeginDraw point ->
       ({model | tracer = Just {prevMidpoint = point , lastPoint = point} }
       , Cmd.none)
     ContDraw point ->
@@ -100,21 +100,12 @@ update msg model =
           ((addSegment p model.tracer model) , Cmd.none)
         Nothing ->
           (model, Cmd.none)
-
-addSegment : Point -> Trace -> Model -> Model
-addSegment p t model =
-  let
-    newPoint =
-      case (p, t.lastPoint) of
-        ((p_x, p_y), (t_x, t_y)) ->
-          (p_x + (t_x - p_x) / 2 , p_y + (t_y = p_y) / 2)
-  in
-    { model | tracer = Just { prevMidpoint = newPoint , lastPoint = p }
-            , segments = Array.push
-              (Canvas.shapes
-                [lineWidth 10.0 , stroke model.color]
-                  )}
-
+    EndDraw point ->
+      case model.tracer of
+        Just _ ->
+          ((endSegment p model.tracer model) , Cmd.none)
+        Nothing ->
+          (model, Cmd.none)
 
 --VIEW
 view : Model -> Html Msg
@@ -129,5 +120,10 @@ view model =
           Just w -> w)
     , Html.button [onClick RoundOver][Html.text "End round"]
     , Html.text ("Game Time" ++ String.fromInt model.gameTime ++ "RestStart:" ++ String.fromInt model.restStart)
---    , Canvas.toHtml (750, 750) [] model.drawnSegments
+    , Canvas.toHtml (750, 750)
+        [ Mouse.onDown (.offsetPos >> StartAt)
+        , Mouse.onMove (.offsetPos >> MoveAt)
+        , Mouse.onUp (.offsetPos >> EndAt)
+        ]
+        model.drawnSegments
     ]

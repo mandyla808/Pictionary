@@ -66,7 +66,12 @@ roundOverUpdate model =
              roundTime = 0,
              segments = Array.empty,
              drawnSegments = [],
-             restStart = gameTime
+             restStart = gameTime,
+             segments = Array.empty,
+             drawnSegments = [],
+             tracer = Nothing,
+             color = Color.black,
+             size = 20
             }
 
 
@@ -94,3 +99,30 @@ drawSegments : Model -> Model
 drawSegments model =
   {model | drawnSegments = Array.toList model.segments
         ,  segments = Array.empty}
+
+
+addSegment : Point -> Trace -> Model -> Model
+addSegment p t model =
+  let
+    newPoint =
+      case (p, t.lastPoint) of
+        ((p_x, p_y), (t_x, t_y)) ->
+          (p_x + (t_x - p_x) / 2 , p_y + (t_y = p_y) / 2)
+  in
+    { model | tracer = Just { prevMidpoint = newPoint , lastPoint = p }
+            , segments = Array.push
+              (Canvas.shapes
+                [lineWidth 10.0 , stroke model.color]
+                [Canvas.path t.prevMidpoint [Canvas.quadraticCurveTo t.lastPoint newPoint] ]
+              )
+    }
+
+endSegment : Point -> Trace -> Model -> Model
+endSegment p t model =
+    { model | tracer = Nothing
+            , segments = Array.push
+              (Canvas.shapes
+                [lineWidth 10.0 , stroke model.color]
+                [Canvas.path t.prevMidpoint [Canvas.quadraticCurveTo t.lastPoint p] ]
+              )
+    }

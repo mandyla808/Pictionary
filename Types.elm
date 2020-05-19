@@ -29,15 +29,18 @@ type alias Trace =
   , lastPoint: Point
   }
 
-type Msg =
-  None |
-  Tick Posix |
-  Guess Player String|
-  RoundOver |
-  NewWord (Maybe String, List String) |
-  NewDrawer (Maybe Player, List Player) |
-  StartRound |
-  RestPeriod
+type Msg
+  = None
+  | Tick Posix
+  | Guess Player String
+  | RoundOver
+  | NewWord (Maybe String, List String)
+  | NewDrawer (Maybe Player, List Player)
+  | StartRound
+  | RestPeriod
+  | BeginDraw
+  | ContDraw
+  | EndDraw
 
 -- MODEL
 type alias Model =
