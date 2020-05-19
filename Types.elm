@@ -34,10 +34,10 @@ type Msg =
   Tick Posix |
   Guess Player String|
   RoundOver |
-  NextRound |
   NewWord (Maybe String, List String) |
   NewDrawer (Maybe Player, List Player) |
-  StartRound (Maybe String, List String) (Maybe Player, List Player)
+  StartRound |
+  RestPeriod
 
 -- MODEL
 type alias Model =
@@ -48,7 +48,9 @@ type alias Model =
   , currentDrawer : Maybe Player
   , roundNumber : Int
   , roundTime : Int
+  , gameTime : Int
   , roundPlaying : Bool
+  , restSeconds : Int
   , segments : Array Renderable
   , drawnSegments : List Renderable
   , tracer : Maybe Trace

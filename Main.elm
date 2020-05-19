@@ -3,11 +3,13 @@ module Main exposing (..)
 --Imports--
 import Browser
 import Html exposing (Html)
+import Html.Events exposing (onClick)
 import Debug
 import Random
 import Time exposing (Posix)
 import Random.List
 import Task.Extra exposing (message)
+import System.Message exposing (toCmd)
 
 import Types exposing(..)
 import Updates exposing (..)
@@ -15,6 +17,7 @@ import Words exposing (..)
 
 import Array exposing (Array)
 import Color exposing (Color)
+import Canvas
 
 ----------------------------------------------------------------------
 main : Program Flags Model Msg
@@ -38,8 +41,10 @@ initModel =
   , unusedWords = wordList
   , whiteboardClean = True
   , currentDrawer = Nothing
-  , roundNumber = 1
+  , roundNumber = 0
   , roundTime = 60
+  , gameTime = 0
+  , restStart = 0
   , roundPlaying = False -- Is the round still on?
   , segments = Array.empty
   , drawnSegments = []
@@ -59,24 +64,56 @@ subscriptions model =
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
   case msg of
-    None -> (model, Cmd.none)
+    None ->
+      (model, Cmd.none)
     Tick t ->
       let
         newModel = drawSegments model
       in
-      ({newModel | roundTime = model.roundTime-1},
-      if model.roundTime == 1 then message RoundOver
+      ({newModel | roundTime = model.roundTime-1
+                 , gameTime = model.gameTime + 1},
+      if model.roundTime == 1 then toCmd RoundOver
         else Cmd.none)
-    Guess player guess -> (playerUpdate model player guess, Cmd.none)
-    RoundOver -> (roundOverUpdate model, Cmd.none)
-    NextRound -> (model, Cmd.batch[
-     Random.generate NewWord (Random.List.choose model.unusedWords),
-     Random.generate NewDrawer (Random.List.choose model.players)
-     ])
-    NewWord (newWord, words) -> (newWordUpdate model newWord words, Cmd.none)
-    NewDrawer (drawer, _) -> (newDrawerUpdate model drawer, Cmd.none)
-    StartRound _ _ -> (model, Cmd.none)
+    Guess player guess ->
+      (playerUpdate model player guess, Cmd.none)
+    RoundOver ->  --need to set tracer to Nothing
+      (roundOverUpdate model, toCmd RestPeriod)
+    RestPeriod ->
+      ({model | restSeconds = 1 + model.restSeconds },
+      if (model.gameTime - model.restStart == 5) then toCmd StartRound
+      else toCmd RestPeriod)
+    NewWord (newWord, words) ->
+      (newWordUpdate model newWord words, Cmd.none)
+    NewDrawer (drawer, _) ->
+      (newDrawerUpdate model drawer, Cmd.none)
+    StartRound ->
+      (startRoundUpdate model, Cmd.batch[
+        Random.generate NewWord (Random.List.choose model.unusedWords),
+        Random.generate NewDrawer (Random.List.choose model.players)
+        ])
+    BeginDraw point ->  --need to add to Msg type def
+      ({model | tracer = Just {prevMidpoint = point , lastPoint = point} }
+      , Cmd.none)
+    ContDraw point ->
+      case model.tracer of
+        Just _ ->
+          ((addSegment p model.tracer model) , Cmd.none)
+        Nothing ->
+          (model, Cmd.none)
 
+addSegment : Point -> Trace -> Model -> Model
+addSegment p t model =
+  let
+    newPoint =
+      case (p, t.lastPoint) of
+        ((p_x, p_y), (t_x, t_y)) ->
+          (p_x + (t_x - p_x) / 2 , p_y + (t_y = p_y) / 2)
+  in
+    { model | tracer = Just { prevMidpoint = newPoint , lastPoint = p }
+            , segments = Array.push
+              (Canvas.shapes
+                [lineWidth 10.0 , stroke model.color]
+                  )}
 
 
 --VIEW
@@ -85,4 +122,12 @@ view model =
   Html.div
     []
     [ Html.text ("Timer:" ++ String.fromInt model.roundTime)
+    , Html.button [onClick StartRound][Html.text "Start Round:"]
+    , Html.text ( "Round num:" ++ String.fromInt model.roundNumber ++ "Current word:" ++
+        case model.currentWord of
+          Nothing -> "No word"
+          Just w -> w)
+    , Html.button [onClick RoundOver][Html.text "End round"]
+    , Html.text ("Game Time" ++ String.fromInt model.gameTime ++ "RestStart:" ++ String.fromInt model.restStart)
+--    , Canvas.toHtml (750, 750) [] model.drawnSegments
     ]

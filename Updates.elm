@@ -63,8 +63,10 @@ roundOverUpdate model =
              currentDrawer = Nothing,
              roundPlaying = False,
              players = List.map playerRoundReset model.players,
+             roundTime = 0,
              segments = Array.empty,
-             drawnSegments = []
+             drawnSegments = [],
+             restStart = gameTime
             }
 
 
@@ -80,9 +82,15 @@ newDrawerUpdate model player =
     Nothing -> model
     Just _ -> {model | currentDrawer = player}
 
+startRoundUpdate : Model -> Model
+startRoundUpdate model =
+  {model | roundNumber = model.roundNumber + 1
+         , roundPlaying = True
+         , roundTime = 60}
+
 --After every tick, draw the segments
 --set segments to empty array
 drawSegments : Model -> Model
 drawSegments model =
-  model.drawnSegments = Array.toList model.segments
-  model.segments = Array.empty
+  {model | drawnSegments = Array.toList model.segments
+        ,  segments = Array.empty}
