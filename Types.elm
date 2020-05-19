@@ -10,7 +10,7 @@ import Canvas exposing (..)
 import Canvas.Settings exposing (..)
 import Canvas.Settings.Advanced exposing (..)
 import Canvas.Settings.Line exposing (..)
-
+import Array exposing (Array)
 
 ----------------------------------------------------------------------
 

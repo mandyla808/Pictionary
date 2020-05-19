@@ -13,6 +13,9 @@ import Types exposing(..)
 import Updates exposing (..)
 import Words exposing (..)
 
+import Array exposing (Array)
+import Color exposing (Color)
+
 ----------------------------------------------------------------------
 main : Program Flags Model Msg
 main =
@@ -57,9 +60,13 @@ update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
   case msg of
     None -> (model, Cmd.none)
-    Tick t -> ({model | roundTime = model.roundTime-1},
+    Tick t ->
+      let
+        newModel = drawSegments model
+      in
+      ({newModel | roundTime = model.roundTime-1},
       if model.roundTime == 1 then message RoundOver
-        else (drawSegments model))
+        else Cmd.none)
     Guess player guess -> (playerUpdate model player guess, Cmd.none)
     RoundOver -> (roundOverUpdate model, Cmd.none)
     NextRound -> (model, Cmd.batch[
@@ -68,8 +75,9 @@ update msg model =
      ])
     NewWord (newWord, words) -> (newWordUpdate model newWord words, Cmd.none)
     NewDrawer (drawer, _) -> (newDrawerUpdate model drawer, Cmd.none)
+    StartRound _ _ -> (model, Cmd.none)
 
-drawSegments : 
+
 
 --VIEW
 view : Model -> Html Msg

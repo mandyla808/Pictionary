@@ -7,6 +7,7 @@ import Debug
 import Types exposing (..)
 import Random exposing (Generator)
 import Random.List
+import Array
 --updatePlayer
 --Inputs: players player
 --Will search through the list of players
@@ -61,7 +62,9 @@ roundOverUpdate model =
     {model | currentWord = Nothing,
              currentDrawer = Nothing,
              roundPlaying = False,
-             players = List.map playerRoundReset model.players
+             players = List.map playerRoundReset model.players,
+             segments = Array.empty,
+             drawnSegments = []
             }
 
 
@@ -76,3 +79,10 @@ newDrawerUpdate model player =
   case player of
     Nothing -> model
     Just _ -> {model | currentDrawer = player}
+
+--After every tick, draw the segments
+--set segments to empty array
+drawSegments : Model -> Model
+drawSegments model =
+  model.drawnSegments = Array.toList model.segments
+  model.segments = Array.empty
