@@ -37,7 +37,6 @@ type Msg
   | NewWord (Maybe String, List String)
   | NewDrawer (Maybe Player, List Player)
   | StartRound
-  | RestPeriod
   | BeginDraw Canvas.Point
   | ContDraw Canvas.Point
   | EndDraw Canvas.Point
@@ -54,7 +53,7 @@ type alias Model =
   , roundTime : Int
   , gameTime : Int
   , roundPlaying : Bool
-  , restSeconds : Int
+  , restStart : Int
   , segments : Array Renderable
   , drawnSegments : List Renderable
   , tracer : Maybe Trace

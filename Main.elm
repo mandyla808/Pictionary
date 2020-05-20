@@ -48,7 +48,7 @@ initModel =
   , roundNumber = 0
   , roundTime = 60
   , gameTime = 0
-  , restSeconds = 0 -- restStart = 0?
+  , restStart = 0 -- restStart = 0?
   , roundPlaying = False -- Is the round still on?
   , segments = Array.empty
   , drawnSegments = []
@@ -76,18 +76,14 @@ update msg model =
       ({model | roundTime = model.roundTime-1
                  , gameTime = model.gameTime + 1},
       if model.roundTime == 1 then toCmd RoundOver
-        else Cmd.none)
+      else if (model.gameTime - model.restStart == 5) then toCmd StartRound
+      else Cmd.none)
     NextScreen float ->
       (drawSegments model , Cmd.none)
     Guess player guess ->
       (playerUpdate model player guess, Cmd.none)
     RoundOver ->
-      (roundOverUpdate model, Cmd.none) -- toCmd RestPeriod)
-    RestPeriod ->
-      ({model | restSeconds = 1 + model.restSeconds },
-      --if (model.gameTime - model.restStart == 5) then toCmd StartRound
-      if (model.gameTime - model.restSeconds == 5) then toCmd StartRound
-      else toCmd RestPeriod)
+      (roundOverUpdate model, Cmd.none)
     NewWord (newWord, words) ->
       (newWordUpdate model newWord words, Cmd.none)
     NewDrawer (drawer, _) ->
@@ -126,7 +122,7 @@ view model =
           Just w -> w)
     , Html.button [onClick RoundOver][Html.text "End round"]
     --, Html.text ("Game Time" ++ String.fromInt model.gameTime ++ "RestStart:" ++ String.fromInt model.restStart)
-    , Html.text ("Game Time" ++ String.fromInt model.gameTime ++ "RestStart:" ++ String.fromInt model.restSeconds)
+    , Html.text ("Game Time" ++ String.fromInt model.gameTime ++ "RestStart:" ++ String.fromInt model.restStart)
     , Canvas.toHtml (750, 750)
         [ Mouse.onDown (.offsetPos >> BeginDraw)
         , Mouse.onMove (.offsetPos >> ContDraw)
