@@ -41,6 +41,7 @@ type Msg
   | BeginDraw Canvas.Point
   | ContDraw Canvas.Point
   | EndDraw Canvas.Point
+  | NextScreen Float
 
 -- MODEL
 type alias Model =
@@ -58,7 +59,8 @@ type alias Model =
   , drawnSegments : List Renderable
   , tracer : Maybe Trace
   , color : Color
-  , size : Int
+  , size : Float
+  , currentScreen : Int
   }
 
 --FLAGS

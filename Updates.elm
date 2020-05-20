@@ -62,20 +62,19 @@ roundOverUpdate model =
   let
     playerRoundReset : Player -> Player
     playerRoundReset p = {p | isGuessing = False, isDrawing = False, guesses = []}
+    newModel = drawSegments model
   in
-    {model | currentWord = Nothing,
+    {newModel | currentWord = Nothing,
              currentDrawer = Nothing,
              roundPlaying = False,
              players = List.map playerRoundReset model.players,
              roundTime = 0,
-             segments = Array.empty,
-             drawnSegments = [],
-             restStart = gameTime,
+             -- restStart = gameTime,
              segments = Array.empty,
              drawnSegments = [],
              tracer = Nothing,
              color = Color.black,
-             size = 20
+             size = 20.0
             }
 
 
@@ -101,8 +100,14 @@ startRoundUpdate model =
 --set segments to empty array
 drawSegments : Model -> Model
 drawSegments model =
-  {model | drawnSegments = Array.toList model.segments
-        ,  segments = Array.empty}
+  if model.roundPlaying
+    then {model | drawnSegments = Array.toList model.segments
+         , segments = Array.empty
+         , currentScreen = model.currentScreen + 1 }
+  else { model
+       | drawnSegments = [ Canvas.shapes [ Canvas.Settings.fill Color.white ]
+                                         [ Canvas.rect ( 1, 1 ) 748.0 748.0 ]]
+       , currentScreen = model.currentScreen + 1 }
 
 
 addSegment :  Canvas.Point -> Trace -> Model -> Model
@@ -111,12 +116,12 @@ addSegment p t model =
     newPoint =
       case (p, t.lastPoint) of
         ((p_x, p_y), (t_x, t_y)) ->
-          (p_x + (t_x - p_x) / 2 , p_y + (t_y - p_y) / 2)
+          (t_x + (p_x - t_x) / 2 , t_y + (p_y - t_y) / 2)
   in
     { model | tracer = Just { prevMidpoint = newPoint , lastPoint = p }
             , segments = (Array.push
               (Canvas.shapes
-                [ Canvas.Settings.Line.lineWidth 50.0
+                [ Canvas.Settings.Line.lineWidth model.size
                 , Canvas.Settings.stroke model.color]
                 [Canvas.path t.prevMidpoint [Canvas.quadraticCurveTo t.lastPoint newPoint] ]
               ) model.segments)
@@ -127,7 +132,7 @@ endSegment p t model =
     { model | tracer = Nothing
             , segments = (Array.push
               (Canvas.shapes
-                [ Canvas.Settings.Line.lineWidth 50.0
+                [ Canvas.Settings.Line.lineWidth model.size
                 , Canvas.Settings.stroke model.color]
                 [Canvas.path t.prevMidpoint [Canvas.quadraticCurveTo t.lastPoint p] ]
               ) model.segments)

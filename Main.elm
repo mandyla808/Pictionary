@@ -2,8 +2,10 @@ module Main exposing (..)
 
 --Imports--
 import Browser
+import Browser.Events
 import Html exposing (Html)
 import Html.Events exposing (onClick)
+import Html.Attributes
 import Debug
 import Random
 import Time exposing (Posix)
@@ -18,6 +20,8 @@ import Words exposing (..)
 import Array exposing (Array)
 import Color exposing (Color)
 import Canvas
+import Canvas.Settings
+import Html.Events.Extra.Mouse as Mouse
 
 ----------------------------------------------------------------------
 main : Program Flags Model Msg
@@ -44,13 +48,14 @@ initModel =
   , roundNumber = 0
   , roundTime = 60
   , gameTime = 0
-  , restStart = 0
+  , restSeconds = 0 -- restStart = 0?
   , roundPlaying = False -- Is the round still on?
   , segments = Array.empty
   , drawnSegments = []
   , tracer = Nothing
   , color = Color.black
-  , size = 20
+  , size = 20.0
+  , currentScreen = 0
   }
 
 --SUBSCRIPTIONS
@@ -58,6 +63,7 @@ subscriptions : Model -> Sub Msg
 subscriptions model =
   Sub.batch
   [ Time.every 1000 Tick
+  , Browser.Events.onAnimationFrameDelta NextScreen
   ]
 
 --UPDATE
@@ -67,20 +73,20 @@ update msg model =
     None ->
       (model, Cmd.none)
     Tick t ->
-      let
-        newModel = drawSegments model
-      in
-      ({newModel | roundTime = model.roundTime-1
+      ({model | roundTime = model.roundTime-1
                  , gameTime = model.gameTime + 1},
       if model.roundTime == 1 then toCmd RoundOver
         else Cmd.none)
+    NextScreen float ->
+      (drawSegments model , Cmd.none)
     Guess player guess ->
       (playerUpdate model player guess, Cmd.none)
     RoundOver ->
-      (roundOverUpdate model, toCmd RestPeriod)
+      (roundOverUpdate model, Cmd.none) -- toCmd RestPeriod)
     RestPeriod ->
       ({model | restSeconds = 1 + model.restSeconds },
-      if (model.gameTime - model.restStart == 5) then toCmd StartRound
+      --if (model.gameTime - model.restStart == 5) then toCmd StartRound
+      if (model.gameTime - model.restSeconds == 5) then toCmd StartRound
       else toCmd RestPeriod)
     NewWord (newWord, words) ->
       (newWordUpdate model newWord words, Cmd.none)
@@ -96,14 +102,14 @@ update msg model =
       , Cmd.none)
     ContDraw point ->
       case model.tracer of
-        Just _ ->
-          ((addSegment p model.tracer model) , Cmd.none)
+        Just x ->
+          ((addSegment point x model) , Cmd.none)
         Nothing ->
           (model, Cmd.none)
     EndDraw point ->
       case model.tracer of
-        Just _ ->
-          ((endSegment p model.tracer model) , Cmd.none)
+        Just x ->
+          ((endSegment point x model) , Cmd.none)
         Nothing ->
           (model, Cmd.none)
 
@@ -119,11 +125,13 @@ view model =
           Nothing -> "No word"
           Just w -> w)
     , Html.button [onClick RoundOver][Html.text "End round"]
-    , Html.text ("Game Time" ++ String.fromInt model.gameTime ++ "RestStart:" ++ String.fromInt model.restStart)
+    --, Html.text ("Game Time" ++ String.fromInt model.gameTime ++ "RestStart:" ++ String.fromInt model.restStart)
+    , Html.text ("Game Time" ++ String.fromInt model.gameTime ++ "RestStart:" ++ String.fromInt model.restSeconds)
     , Canvas.toHtml (750, 750)
-        [ Mouse.onDown (.offsetPos >> StartAt)
-        , Mouse.onMove (.offsetPos >> MoveAt)
-        , Mouse.onUp (.offsetPos >> EndAt)
+        [ Mouse.onDown (.offsetPos >> BeginDraw)
+        , Mouse.onMove (.offsetPos >> ContDraw)
+        , Mouse.onUp (.offsetPos >> EndDraw)
         ]
-        model.drawnSegments
+        ( ( Canvas.shapes [ Canvas.Settings.stroke Color.blue ] [ Canvas.rect ( 0, 0 ) 750 750 ]) ::
+          model.drawnSegments )
     ]
