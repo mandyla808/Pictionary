@@ -21,7 +21,7 @@ updatePlayer players player =
   case players of
     [] -> []
     p :: rest ->
-      if p.name == player.name then
+      if p.identity == player.identity then
         player :: rest
       else
         p :: (updatePlayer rest player)
@@ -30,8 +30,8 @@ updatePlayer players player =
 --Inputs: model player guess
 --Updates the player's list of guesses
 --Updates the score of the player if they are correct, and prevents them from guessing in the round again
-playerUpdate : Model -> Player -> String -> Model
-playerUpdate model player guess =
+playerGuessUpdate : Model -> Player -> String -> Model
+playerGuessUpdate model player guess =
   case model.currentWord of
     Nothing -> model
     Just cw ->
@@ -41,17 +41,35 @@ playerUpdate model player guess =
         if guess == cw then
           let
             updatedPlayer =
-              {player |  score = (player.score + 1),
-                         guesses = updatedGuesses,
-                         isGuessing = False
+              {player |  score = (player.score + 1)
+                       , guesses = updatedGuesses
+                       , isGuessing = False
+                       , currentGuess = ""
               }
           in
             {model | players = (updatePlayer model.players updatedPlayer) }
         else
           let
-            updatedPlayer = {player | guesses = updatedGuesses}
+            updatedPlayer = {player | guesses = updatedGuesses
+                                    , currentGuess = ""}
           in
             {model | players = (updatePlayer model.players updatedPlayer)}
+
+playerNameUpdate : Model -> Player -> String -> Model
+playerNameUpdate model player newName =
+  let
+    updatedPlayer =
+      {player | name = newName}
+  in
+    {model | players = (updatePlayer model.players updatedPlayer)}
+
+playerCGUpdate : Model -> Player -> String -> Model
+playerCGUpdate model player currGuess =
+  let
+    updatedPlayer =
+      {player | currentGuess = currGuess}
+  in
+    {model | players = (updatePlayer model.players updatedPlayer)}
 
 --Updates the model when the round is over
 --Makes all players unable to guess

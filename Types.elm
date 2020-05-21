@@ -18,6 +18,8 @@ type alias Score = Int
 type alias Name = String
 type alias Player =
   { name : Name
+  , identity : Int
+  , currentGuess : String
   , score : Int
   , guesses : List String
   , isGuessing : Bool
@@ -32,6 +34,9 @@ type alias Trace =
 type Msg
   = None
   | Tick Posix
+  | NewPlayer
+  | UpdateName Player String
+  | UpdateCurrentGuess Player String
   | Guess Player String
   | RoundOver
   | NewWord (Maybe String, List String)
@@ -45,6 +50,7 @@ type Msg
 -- MODEL
 type alias Model =
   { players : List Player
+  , numPlayers : Int
   , currentWord : Maybe String
   , unusedWords : List String
   , whiteboardClean : Bool

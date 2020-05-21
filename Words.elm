@@ -12,5 +12,7 @@ wordList =
     "Glasses","Snowflake","Book","Stairs","Starfish","Bee","Igloo","Strawberry","Butterfly",
     "Ladybug","Sun","Camera","Lamp","Tire","Cat","Lion","Toast","Church","Mailbox",
     "Toothbrush","Crayon","Dolphin","Nose","Truck","Egg","Peanut", "Laptop", "Headphones",
-    "Key","Table","Bread","Monkey","Coronavirus","Wallet","Door","Window","Cloud"
+    "Key","Table","Bread","Monkey","Coronavirus","Wallet","Door","Window","Cloud",
+    "Regenstein","Mansueto","cs223","Ryerson","Ratner","Bartlett","Dean Boyer",
+    "Max Palevsky","Phoenix","Harper","Dollar Milkshake","Coffee"
   ]

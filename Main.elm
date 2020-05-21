@@ -3,9 +3,9 @@ module Main exposing (..)
 --Imports--
 import Browser
 import Browser.Events
-import Html exposing (Html)
-import Html.Events exposing (onClick)
-import Html.Attributes
+import Html exposing (Html, div)
+import Html.Events exposing (onClick, onInput)
+import Html.Attributes exposing(placeholder, value)
 import Debug
 import Random
 import Time exposing (Posix)
@@ -38,9 +38,21 @@ init : Flags -> (Model, Cmd Msg)
 init () =
   (initModel, Cmd.none)
 
+initPlayer : Int -> Player
+initPlayer n =
+  { name = ""
+  , identity = n
+  , score = 0
+  , currentGuess = ""
+  , guesses = []
+  , isGuessing = False
+  , isDrawing = False
+  }
+
 initModel : Model
 initModel =
   { players = []
+  , numPlayers = 0
   , currentWord = Nothing
   , unusedWords = wordList
   , whiteboardClean = True
@@ -78,10 +90,16 @@ update msg model =
       if model.roundTime == 1 then toCmd RoundOver
       else if (model.gameTime - model.restStart == 5) then toCmd StartRound
       else Cmd.none)
+    NewPlayer ->
+      ({model | numPlayers = model.numPlayers + 1
+              , players = model.players ++ [(initPlayer model.numPlayers)]
+              }, Cmd.none)
+    UpdateName player name ->  (playerNameUpdate model player name, Cmd.none)
+    UpdateCurrentGuess player guess -> (playerCGUpdate model player guess, Cmd.none)
     NextScreen float ->
       (drawSegments model , Cmd.none)
     Guess player guess ->
-      (playerUpdate model player guess, Cmd.none)
+      (playerGuessUpdate model player guess, Cmd.none)
     RoundOver ->
       (roundOverUpdate model, Cmd.none)
     NewWord (newWord, words) ->
@@ -114,15 +132,76 @@ view : Model -> Html Msg
 view model =
   Html.div
     []
-    [ Html.text ("Timer:" ++ String.fromInt model.roundTime)
-    , Html.button [onClick StartRound][Html.text "Start Round:"]
+    [ Html.div
+      []
+      [Html.text ("Timer:" ++ String.fromInt model.roundTime)]
+
+    , Html.div
+      []
+      [Html.button [onClick StartRound][Html.text "Start Round:"]
     , Html.text ( "Round num:" ++ String.fromInt model.roundNumber ++ "Current word:" ++
         case model.currentWord of
           Nothing -> "No word"
-          Just w -> w)
-    , Html.button [onClick RoundOver][Html.text "End round"]
-    --, Html.text ("Game Time" ++ String.fromInt model.gameTime ++ "RestStart:" ++ String.fromInt model.restStart)
-    , Html.text ("Game Time" ++ String.fromInt model.gameTime ++ "RestStart:" ++ String.fromInt model.restStart)
+          Just w -> w)]
+
+    , Html.div
+      []
+      [Html.button [onClick RoundOver][Html.text "End round"]
+    , Html.text ("Game Time" ++ String.fromInt model.gameTime ++ "RestStart:" ++ String.fromInt model.restStart)]
+
+--  ALLOWS US TO ALLOW NEW PLAYERS TO COME INTO THE GAME
+    , Html.div
+      []
+      [Html.button [onClick NewPlayer] [Html.text "Click to join"]]
+    ,
+      let
+        printPlayers : List Player -> String
+        printPlayers ps =
+          case ps of
+            [] -> ""
+            p::rest -> p.name ++ ", " ++ printPlayers rest
+        giveNameBoxes : List Player -> List (Html Msg)
+        giveNameBoxes players =
+          case players of
+            [] -> []
+            p :: rest ->
+              (Html.input [placeholder ("Player " ++ String.fromInt (p.identity+1)), value p.name, onInput (UpdateName p)] []) ::
+                giveNameBoxes rest
+      in
+        Html.div
+        []
+        ((giveNameBoxes model.players) ++ [Html.text ("Current Ps" ++ printPlayers(model.players))])
+
+--  ALLOWS US TO ALLOW PLAYERS TO TYPE IN GUESSES
+    , Html.div
+      []
+      (let
+        giveGuessBoxes : List Player -> List (Html Msg)
+        giveGuessBoxes players =
+          case players of
+            [] -> []
+            p :: rest ->
+              (Html.input [placeholder ("Guess Player " ++ String.fromInt (p.identity+1)),
+                            value p.currentGuess, onInput (UpdateCurrentGuess p)] []) :: giveGuessBoxes rest
+
+      in
+        giveGuessBoxes model.players)
+
+-- ALLOWS PLAYERS TO SUBMIT GUESSES
+    , Html.div
+      []
+      (let
+        giveGuessButton : List Player -> List (Html Msg)
+        giveGuessButton players =
+          case players of
+            [] -> []
+            p :: rest ->
+              (Html.button [onClick (Guess p p.currentGuess)] [Html.text ("Submit guess player" ++ String.fromInt(p.identity +1))])
+                :: giveGuessButton rest
+        in
+          giveGuessButton model.players)
+
+
     , Canvas.toHtml (750, 750)
         [ Mouse.onDown (.offsetPos >> BeginDraw)
         , Mouse.onMove (.offsetPos >> ContDraw)
