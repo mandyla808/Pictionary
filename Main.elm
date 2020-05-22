@@ -127,6 +127,16 @@ update msg model =
         Nothing ->
           (model, Cmd.none)
 
+stringView : List String -> List (Html Msg)
+stringView xs =
+  case xs of
+    [] -> []
+    x :: rest -> Html.text(x) :: (stringView rest)
+
+--Takes a list of Html objects and puts them in an Html div
+applyHtmlDiv : List (Html Msg) -> Html Msg
+applyHtmlDiv xs = Html.div [] xs
+
 --VIEW
 view : Model -> Html Msg
 view model =
@@ -172,7 +182,7 @@ view model =
         []
         ((giveNameBoxes model.players) ++ [Html.text ("Current Ps" ++ printPlayers(model.players))])
 
---  ALLOWS US TO ALLOW PLAYERS TO TYPE IN GUESSES
+--  ALLOWS PLAYERS TO TYPE IN GUESSES
     , Html.div
       []
       (let
@@ -183,14 +193,11 @@ view model =
             p :: rest ->
               (Html.input [placeholder ("Guess Player " ++ String.fromInt (p.identity+1)),
                             value p.currentGuess, onInput (UpdateCurrentGuess p)] []) :: giveGuessBoxes rest
-
       in
         giveGuessBoxes model.players)
 
 -- ALLOWS PLAYERS TO SUBMIT GUESSES
-    , Html.div
-      []
-      (let
+    ,  let
         giveGuessButton : List Player -> List (Html Msg)
         giveGuessButton players =
           case players of
@@ -199,7 +206,19 @@ view model =
               (Html.button [onClick (Guess p p.currentGuess)] [Html.text ("Submit guess player" ++ String.fromInt(p.identity +1))])
                 :: giveGuessButton rest
         in
-          giveGuessButton model.players)
+          Html.div []
+            (giveGuessButton model.players)
+
+--VIEWING OF GUESSES
+    , let
+        guesses : Player -> List String
+        guesses p = p.guesses
+        pGuesses = List.map guesses model.players
+
+      in
+        Html.div []
+          (List.map applyHtmlDiv (List.map stringView pGuesses))
+
 
 
     , Canvas.toHtml (750, 750)
