@@ -90,14 +90,21 @@ update msg model =
       if model.roundTime == 1 then toCmd RoundOver
       else if (model.gameTime - model.restStart == 5) then toCmd StartRound
       else Cmd.none)
+
+    --Adds player when a button ("Click to join!") is hit
     NewPlayer ->
       ({model | numPlayers = model.numPlayers + 1
               , players = model.players ++ [(initPlayer model.numPlayers)]
               }, Cmd.none)
+
     UpdateName player name ->  (playerNameUpdate model player name, Cmd.none)
+
+    --Tracks what the player has in their text box
     UpdateCurrentGuess player guess -> (playerCGUpdate model player guess, Cmd.none)
+
     NextScreen float ->
       (drawSegments model , Cmd.none)
+
     Guess player guess ->
       (playerGuessUpdate model player guess, Cmd.none)
     RoundOver ->
@@ -137,6 +144,17 @@ stringView xs =
 applyHtmlDiv : List (Html Msg) -> Html Msg
 applyHtmlDiv xs = Html.div [] xs
 
+
+--Views all info on a player
+viewPlayerInfo : Player -> List (Html Msg)
+viewPlayerInfo p =
+  List.map applyHtmlDiv
+    [ [Html.text("Name: " ++ p.name)]
+    , [Html.text("Player ID: " ++ String.fromInt p.identity)]
+    , [Html.text("Current Guess: " ++ p.currentGuess)]
+    , [Html.text("Score: " ++ String.fromInt p.score)]
+    , stringView p.guesses]
+
 --VIEW
 view : Model -> Html Msg
 view model =
@@ -162,7 +180,7 @@ view model =
 --  ALLOWS US TO ALLOW NEW PLAYERS TO COME INTO THE GAME
     , Html.div
       []
-      [Html.button [onClick NewPlayer] [Html.text "Click to join"]]
+      [Html.button [onClick NewPlayer] [Html.text "Click to add player"]]
     ,
       let
         printPlayers : List Player -> String
@@ -180,7 +198,7 @@ view model =
       in
         Html.div
         []
-        ((giveNameBoxes model.players) ++ [Html.text ("Current Ps" ++ printPlayers(model.players))])
+        (giveNameBoxes model.players)
 
 --  ALLOWS PLAYERS TO TYPE IN GUESSES
     , Html.div
@@ -196,7 +214,7 @@ view model =
       in
         giveGuessBoxes model.players)
 
--- ALLOWS PLAYERS TO SUBMIT GUESSES
+-- Allows players to submit guesses
     ,  let
         giveGuessButton : List Player -> List (Html Msg)
         giveGuessButton players =
@@ -209,18 +227,10 @@ view model =
           Html.div []
             (giveGuessButton model.players)
 
---VIEWING OF GUESSES
-    , let
-        guesses : Player -> List String
-        guesses p = p.guesses
-        pGuesses = List.map guesses model.players
+--View all player information
+    , applyHtmlDiv (List.map applyHtmlDiv (List.map viewPlayerInfo model.players))
 
-      in
-        Html.div []
-          (List.map applyHtmlDiv (List.map stringView pGuesses))
-
-
-
+--Canvas
     , Canvas.toHtml (750, 750)
         [ Mouse.onDown (.offsetPos >> BeginDraw)
         , Mouse.onMove (.offsetPos >> ContDraw)
