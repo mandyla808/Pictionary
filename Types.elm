@@ -25,6 +25,7 @@ type alias Player =
   , isGuessing : Bool
   , isDrawing : Bool
   , isNamed : Bool
+  , isCorrect : Bool
   }
 
 type alias Trace =

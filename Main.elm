@@ -48,6 +48,7 @@ initPlayer n =
   , isGuessing = False
   , isDrawing = False
   , isNamed = False
+  , isCorrect = False
   }
 
 initModel : Model
@@ -86,11 +87,20 @@ update msg model =
     None ->
       (model, Cmd.none)
     Tick t ->
-      ({model | roundTime = model.roundTime-1
-                 , gameTime = model.gameTime + 1},
-      if model.roundTime == 1 then toCmd RoundOver
-      else if (model.gameTime - model.restStart == 5) then toCmd StartRound
-      else Cmd.none)
+      let
+        --Returns true if any player is still guessing
+          stillGuessing : List Player -> Bool
+          stillGuessing ps =
+            case ps of
+              [] -> False
+              p :: rest -> (not p.isCorrect) || (stillGuessing rest)
+      in
+        ({model | roundTime = model.roundTime-1
+                   , gameTime = model.gameTime + 1},
+        if model.roundTime == 1 then toCmd RoundOver
+        else if (model.gameTime - model.restStart == 5) then toCmd StartRound
+        else if (not (stillGuessing model.players)) then toCmd RoundOver
+        else Cmd.none)
 
     --Adds player when a button ("Click to join!") is hit
     NewPlayer ->
@@ -124,20 +134,24 @@ update msg model =
     NextScreen float ->
       (drawSegments model , Cmd.none)
 
-
     Guess player guess ->
       (playerGuessUpdate model player guess, Cmd.none)
+
     RoundOver ->
       (roundOverUpdate model, Cmd.none)
+
     NewWord (newWord, words) ->
       (newWordUpdate model newWord words, Cmd.none)
+
     NewDrawer (drawer, _) ->
       (newDrawerUpdate model drawer, Cmd.none)
+
     StartRound ->
       (startRoundUpdate model, Cmd.batch[
         Random.generate NewWord (Random.List.choose model.unusedWords),
         Random.generate NewDrawer (Random.List.choose model.players)
         ])
+
     BeginDraw point ->
       ({model | tracer = Just {prevMidpoint = point , lastPoint = point} }
       , Cmd.none)

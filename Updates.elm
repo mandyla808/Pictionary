@@ -45,6 +45,7 @@ playerGuessUpdate model player guess =
                        , guesses = updatedGuesses
                        , isGuessing = False
                        , currentGuess = ""
+                       , isCorrect = True
               }
           in
             {model | players = (updatePlayer model.players updatedPlayer) }
@@ -63,7 +64,7 @@ roundOverUpdate: Model -> Model
 roundOverUpdate model =
   let
     playerRoundReset : Player -> Player
-    playerRoundReset p = {p | isGuessing = False, isDrawing = False, guesses = []}
+    playerRoundReset p = {p | isGuessing = False, isDrawing = False, isCorrect = False, guesses = []}
     newModel = drawSegments model
   in
     {newModel | currentWord = Nothing,
@@ -92,7 +93,8 @@ newDrawerUpdate model player =
     Nothing -> model
     Just p  ->
       let
-        updatedPlayer = {p | isDrawing = True}
+        updatedPlayer = {p | isDrawing = True
+                            ,isCorrect = True}
       in
         {model | currentDrawer = player
                , players = updatePlayer model.players updatedPlayer}
