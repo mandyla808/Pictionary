@@ -24,6 +24,7 @@ type alias Player =
   , guesses : List String
   , isGuessing : Bool
   , isDrawing : Bool
+  , isNamed : Bool
   }
 
 type alias Trace =
@@ -38,6 +39,7 @@ type Msg
   | UpdateName Player String
   | UpdateCurrentGuess Player String
   | Guess Player String
+  | SubmitName Player
   | RoundOver
   | NewWord (Maybe String, List String)
   | NewDrawer (Maybe Player, List Player)

@@ -55,22 +55,6 @@ playerGuessUpdate model player guess =
           in
             {model | players = (updatePlayer model.players updatedPlayer)}
 
-playerNameUpdate : Model -> Player -> String -> Model
-playerNameUpdate model player newName =
-  let
-    updatedPlayer =
-      {player | name = newName}
-  in
-    {model | players = (updatePlayer model.players updatedPlayer)}
-
-playerCGUpdate : Model -> Player -> String -> Model
-playerCGUpdate model player currGuess =
-  let
-    updatedPlayer =
-      {player | currentGuess = currGuess}
-  in
-    {model | players = (updatePlayer model.players updatedPlayer)}
-
 --Updates the model when the round is over
 --Makes all players unable to guess
 --Stops the drawer from drawing
@@ -106,13 +90,27 @@ newDrawerUpdate : Model -> Maybe Player -> Model
 newDrawerUpdate model player =
   case player of
     Nothing -> model
-    Just _ -> {model | currentDrawer = player}
+    Just p  ->
+      let
+        updatedPlayer = {p | isDrawing = True}
+      in
+        {model | currentDrawer = player
+               , players = updatePlayer model.players updatedPlayer}
+
+--Changes isGuessing status to true
+allowGuess : Player -> Player
+allowGuess p =
+  if not p.isDrawing then
+    {p | isGuessing = True}
+  else
+    p
 
 startRoundUpdate : Model -> Model
 startRoundUpdate model =
   {model | roundNumber = model.roundNumber + 1
          , roundPlaying = True
-         , roundTime = 60}
+         , roundTime = 60
+         , players = List.map allowGuess model.players}
 
 --After every tick, draw the segments
 --set segments to empty array

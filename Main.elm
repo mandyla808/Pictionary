@@ -47,6 +47,7 @@ initPlayer n =
   , guesses = []
   , isGuessing = False
   , isDrawing = False
+  , isNamed = False
   }
 
 initModel : Model
@@ -97,13 +98,32 @@ update msg model =
               , players = model.players ++ [(initPlayer model.numPlayers)]
               }, Cmd.none)
 
-    UpdateName player name ->  (playerNameUpdate model player name, Cmd.none)
+    UpdateName player newName ->
+      let
+        updatedPlayer = {player | name = newName}
+      in
+          ({model | players = (updatePlayer model.players updatedPlayer)}
+          ,Cmd.none)
+
+    --Player submits their name
+    SubmitName player ->
+      let
+        updatedPlayer = {player | isNamed = True}
+      in
+        ({model | players = (updatePlayer model.players updatedPlayer)}
+        ,Cmd.none)
 
     --Tracks what the player has in their text box
-    UpdateCurrentGuess player guess -> (playerCGUpdate model player guess, Cmd.none)
+    UpdateCurrentGuess player guess ->
+        let
+          updatedPlayer = {player | currentGuess = guess}
+        in
+          ({model | players = (updatePlayer model.players updatedPlayer)}
+          ,Cmd.none)
 
     NextScreen float ->
       (drawSegments model , Cmd.none)
+
 
     Guess player guess ->
       (playerGuessUpdate model player guess, Cmd.none)
@@ -153,6 +173,8 @@ viewPlayerInfo p =
     , [Html.text("Player ID: " ++ String.fromInt p.identity)]
     , [Html.text("Current Guess: " ++ p.currentGuess)]
     , [Html.text("Score: " ++ String.fromInt p.score)]
+    , if p.isDrawing then [Html.text(p.name ++ " is drawing!")]
+      else [Html.text("")]
     , stringView p.guesses]
 
 --VIEW
@@ -177,7 +199,7 @@ view model =
       [Html.button [onClick RoundOver][Html.text "End round"]
     , Html.text ("Game Time" ++ String.fromInt model.gameTime ++ "RestStart:" ++ String.fromInt model.restStart)]
 
---  ALLOWS US TO ALLOW NEW PLAYERS TO COME INTO THE GAME
+--  Manually add players
     , Html.div
       []
       [Html.button [onClick NewPlayer] [Html.text "Click to add player"]]
@@ -193,12 +215,29 @@ view model =
           case players of
             [] -> []
             p :: rest ->
-              (Html.input [placeholder ("Player " ++ String.fromInt (p.identity+1)), value p.name, onInput (UpdateName p)] []) ::
+              (Html.input [placeholder ("Enter Name"), value p.name, onInput (UpdateName p)] []) ::
                 giveNameBoxes rest
       in
         Html.div
         []
         (giveNameBoxes model.players)
+
+-- Submit player names
+    ,  let
+        giveNameButton : List Player -> List (Html Msg)
+        giveNameButton players =
+          case players of
+            [] -> []
+            p :: rest ->
+              if not p.isNamed then
+                (Html.button [onClick (SubmitName p)]
+                [Html.text ("Enter Name!")])
+                  :: giveNameButton rest
+              else
+                giveNameButton rest
+        in
+          Html.div []
+            (giveNameButton model.players)
 
 --  ALLOWS PLAYERS TO TYPE IN GUESSES
     , Html.div
@@ -209,7 +248,7 @@ view model =
           case players of
             [] -> []
             p :: rest ->
-              (Html.input [placeholder ("Guess Player " ++ String.fromInt (p.identity+1)),
+              (Html.input [placeholder ("Guess for " ++ String.fromInt (p.identity+1)),
                             value p.currentGuess, onInput (UpdateCurrentGuess p)] []) :: giveGuessBoxes rest
       in
         giveGuessBoxes model.players)
@@ -221,8 +260,12 @@ view model =
           case players of
             [] -> []
             p :: rest ->
-              (Html.button [onClick (Guess p p.currentGuess)] [Html.text ("Submit guess player" ++ String.fromInt(p.identity +1))])
-                :: giveGuessButton rest
+              if p.isGuessing then
+                (Html.button [onClick (Guess p p.currentGuess)]
+                [Html.text ("Submit guess player" ++ String.fromInt(p.identity +1))])
+                  :: giveGuessButton rest
+              else
+                giveGuessButton rest
         in
           Html.div []
             (giveGuessButton model.players)
