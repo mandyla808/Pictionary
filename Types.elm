@@ -58,7 +58,6 @@ type alias Model =
   , numPlayers : Int
   , currentWord : Maybe String
   , unusedWords : List String
-  , whiteboardClean : Bool
   , currentDrawer : Maybe Player
   , roundNumber : Int
   , roundTime : Int

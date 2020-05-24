@@ -9,7 +9,7 @@ import Random exposing (Generator)
 import Random.List
 import Array
 import Canvas
-import Canvas.Settings.Line
+import Canvas.Settings.Line as Line
 import Canvas.Settings
 import Color
 --updatePlayer
