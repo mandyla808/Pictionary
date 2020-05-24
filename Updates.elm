@@ -112,7 +112,11 @@ startRoundUpdate model =
   {model | roundNumber = model.roundNumber + 1
          , roundPlaying = True
          , roundTime = 60
-         , players = List.map allowGuess model.players}
+         , players = List.map allowGuess model.players
+         , segments = Array.empty
+         , drawnSegments = []
+         , tracer = Nothing
+       }
 
 --After every tick, draw the segments
 --set segments to empty array
@@ -139,7 +143,9 @@ addSegment p t model =
     { model | tracer = Just { prevMidpoint = newPoint , lastPoint = p }
             , segments = (Array.push
               (Canvas.shapes
-                [ Canvas.Settings.Line.lineWidth model.size
+                [ Line.lineWidth model.size
+                , Line.lineCap Line.RoundCap
+                , Line.lineJoin Line.RoundJoin
                 , Canvas.Settings.stroke model.color]
                 [Canvas.path t.prevMidpoint [Canvas.quadraticCurveTo t.lastPoint newPoint] ]
               ) model.segments)
@@ -150,7 +156,9 @@ endSegment p t model =
     { model | tracer = Nothing
             , segments = (Array.push
               (Canvas.shapes
-                [ Canvas.Settings.Line.lineWidth model.size
+                [ Line.lineWidth model.size
+                , Line.lineCap Line.RoundCap
+                , Line.lineJoin Line.RoundJoin
                 , Canvas.Settings.stroke model.color]
                 [Canvas.path t.prevMidpoint [Canvas.quadraticCurveTo t.lastPoint p] ]
               ) model.segments)

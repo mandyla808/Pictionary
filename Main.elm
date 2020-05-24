@@ -5,7 +5,7 @@ import Browser
 import Browser.Events
 import Html exposing (Html, div)
 import Html.Events exposing (onClick, onInput)
-import Html.Attributes exposing(placeholder, value)
+import Html.Attributes exposing(placeholder, value, style)
 import Debug
 import Random
 import Time exposing (Posix)
@@ -21,7 +21,13 @@ import Array exposing (Array)
 import Color exposing (Color)
 import Canvas
 import Canvas.Settings
+import Canvas.Settings.Line as Line
 import Html.Events.Extra.Mouse as Mouse
+
+import Element
+import Element.Input
+import Element.Background
+import Element.Border
 
 ----------------------------------------------------------------------
 main : Program Flags Model Msg
@@ -57,7 +63,6 @@ initModel =
   , numPlayers = 0
   , currentWord = Nothing
   , unusedWords = wordList
-  , whiteboardClean = True
   , currentDrawer = Nothing
   , roundNumber = 0
   , roundTime = 60
@@ -167,6 +172,10 @@ update msg model =
           ((endSegment point x model) , Cmd.none)
         Nothing ->
           (model, Cmd.none)
+    ChangeColor c ->
+      ( {model | color = c} , Cmd.none)
+    ChangeSize f ->
+      ( {model | size = f} , Cmd.none)
 
 stringView : List String -> List (Html Msg)
 stringView xs =
@@ -287,7 +296,8 @@ view model =
 --View all player information
     , applyHtmlDiv (List.map applyHtmlDiv (List.map viewPlayerInfo model.players))
 
---Canvas
+-- Whiteboard
+
     , Canvas.toHtml (750, 750)
         [ Mouse.onDown (.offsetPos >> BeginDraw)
         , Mouse.onMove (.offsetPos >> ContDraw)
@@ -295,4 +305,67 @@ view model =
         ]
         ( ( Canvas.shapes [ Canvas.Settings.stroke Color.blue ] [ Canvas.rect ( 0, 0 ) 750 750 ]) ::
           model.drawnSegments )
+    , Html.div
+        []
+        [ Html.button
+            [ onClick (ChangeColor Color.red)
+            , style "background-color" "red"
+            ]
+            [Html.text "Red"]
+        , Html.button
+            [onClick (ChangeColor Color.orange)
+            , style "background-color" "orange"
+            ]
+            [Html.text "Orange"]
+        , Html.button
+            [onClick (ChangeColor Color.yellow)
+            , style "background-color" "yellow"
+            ]
+            [Html.text "Yellow"]
+        , Html.button
+            [onClick (ChangeColor Color.green)
+            , style "background-color" "green"
+            ]
+            [Html.text "Green"]
+        , Html.button
+            [onClick (ChangeColor Color.blue)
+            , style "background-color" "blue"
+            ]
+            [Html.text "Blue"]
+        , Html.button
+            [onClick (ChangeColor Color.purple)
+            , style "background-color" "purple"
+            ]
+            [Html.text "Purple"]
+        , Html.button
+            [onClick (ChangeColor Color.brown)
+            , style "background-color" "brown"
+            ]
+            [Html.text "Brown"]
+        , Html.button [onClick (ChangeColor Color.white)][Html.text "Eraser"]
+        ]
+    , Element.layout []
+        (Element.Input.slider
+          [ Element.height (Element.px 5)
+          , Element.behindContent
+            (Element.el
+              [ Element.width (Element.px 700)
+              , Element.height (Element.px 2)
+              , Element.Background.color (Element.rgb255 0 0 0)
+              , Element.Border.rounded 2
+              ]
+              Element.none
+            )
+          ]
+          { onChange = ChangeSize
+          , label =
+            Element.Input.labelAbove []
+              (Element.text "Brush Size:")
+          , min = 5
+          , max = 50
+          , step = Nothing
+          , value = model.size
+          , thumb = Element.Input.defaultThumb
+          }
+        )
     ]

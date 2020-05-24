@@ -49,6 +49,8 @@ type Msg
   | ContDraw Canvas.Point
   | EndDraw Canvas.Point
   | NextScreen Float
+  | ChangeColor Color
+  | ChangeSize Float
 
 -- MODEL
 type alias Model =
