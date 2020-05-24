@@ -52,6 +52,10 @@ type Msg
   | ChangeColor Color
   | ChangeSize Float
 
+  -------------------FIREBASE TEST THINGS DELETE
+  | Click
+  | ReceiveValue String
+
 -- MODEL
 type alias Model =
   { players : List Player
@@ -70,6 +74,11 @@ type alias Model =
   , color : Color
   , size : Float
   , currentScreen : Int
+
+
+
+  ----------------FIREBASE TEST DELETE
+  , count : Maybe Int
   }
 
 --FLAGS

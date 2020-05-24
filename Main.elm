@@ -1,4 +1,4 @@
-module Main exposing (..)
+port module Main exposing (..)
 
 --Imports--
 import Browser
@@ -12,6 +12,7 @@ import Time exposing (Posix)
 import Random.List
 import Task.Extra exposing (message)
 import System.Message exposing (toCmd)
+import Json.Decode
 
 import Types exposing(..)
 import Updates exposing (..)
@@ -30,6 +31,10 @@ import Element.Background
 import Element.Border
 
 ----------------------------------------------------------------------
+-- Ports
+port firebaseWrite : String -> Cmd msg
+port firebaseRead : (String -> msg) -> Sub msg
+
 main : Program Flags Model Msg
 main =
   Browser.element
@@ -75,6 +80,9 @@ initModel =
   , color = Color.black
   , size = 20.0
   , currentScreen = 0
+
+  ----------TEST VALUE FOR FIREBASE DELETE
+  , count = Nothing
   }
 
 --SUBSCRIPTIONS
@@ -83,6 +91,11 @@ subscriptions model =
   Sub.batch
   [ Time.every 1000 Tick
   , Browser.Events.onAnimationFrameDelta NextScreen
+
+
+  ----------------FIREBASE TEST SUBSCRIPTIONS DELETE
+  , Browser.Events.onClick (Json.Decode.succeed Click)
+  , firebaseRead ReceiveValue
   ]
 
 --UPDATE
@@ -91,6 +104,36 @@ update msg model =
   case msg of
     None ->
       (model, Cmd.none)
+
+--------------FIREBASE TEST MESSAGES DELETE
+    Click ->
+      case model.count of
+        Just n ->
+          ( model
+          , firebaseWrite (String.fromInt (n + 1))
+          )
+
+        Nothing ->
+          ( model
+          , Cmd.none
+          )
+
+    ReceiveValue value ->
+      case String.toInt value of
+        Just n ->
+          ( { model | count = Just n }
+          , Cmd.none
+          )
+
+        Nothing ->
+          ( model
+          , Cmd.none
+          )
+---------------------------------------------
+
+
+
+
     Tick t ->
       let
         --Returns true if any player is still guessing
@@ -295,6 +338,14 @@ view model =
 
 --View all player information
     , applyHtmlDiv (List.map applyHtmlDiv (List.map viewPlayerInfo model.players))
+
+    , case model.count of
+        Just n ->
+          Html.text <|
+            "The worldwide count is " ++ String.fromInt n ++ "."
+
+        Nothing ->
+          Html.text "Loading worldwide count..."
 
 -- Whiteboard
 
