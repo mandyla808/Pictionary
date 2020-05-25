@@ -35,6 +35,8 @@ import Element.Border
 port firebaseWrite : String -> Cmd msg
 port firebaseRead : (String -> msg) -> Sub msg
 
+port firebaseWrite2 : String -> Cmd msg
+
 main : Program Flags Model Msg
 main =
   Browser.element
@@ -154,7 +156,7 @@ update msg model =
     NewPlayer ->
       ({model | numPlayers = model.numPlayers + 1
               , players = model.players ++ [(initPlayer model.numPlayers)]
-              }, Cmd.none)
+              }, firebaseWrite2 ("512"))
 
     UpdateName player newName ->
       let
@@ -339,6 +341,8 @@ view model =
 --View all player information
     , applyHtmlDiv (List.map applyHtmlDiv (List.map viewPlayerInfo model.players))
 
+
+----------------------FIREBASE TEST DELETE
     , case model.count of
         Just n ->
           Html.text <|
