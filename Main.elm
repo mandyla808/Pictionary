@@ -131,10 +131,15 @@ update msg model =
           ( model
           , Cmd.none
           )
----------------------------------------------
+------------------------ ATTEMPTING FIRBASE UPDATES
+    Outside infoForElm ->
+      case infoForElm of
+        BoardChanged l ->
+          ({model | drawnSegments = l } ,Cmd.none)
 
-
-
+    NextScreen float ->
+      (drawSegments model , sendInfoOutside Draw)
+---------------------------------------------------
 
     Tick t ->
       let
@@ -181,8 +186,8 @@ update msg model =
           ({model | players = (updatePlayer model.players updatedPlayer)}
           ,Cmd.none)
 
-    NextScreen float ->
-      (drawSegments model , Cmd.none)
+--    NextScreen float ->
+--      (drawSegments model , Cmd.none)
 
     Guess player guess ->
       (playerGuessUpdate model player guess, Cmd.none)

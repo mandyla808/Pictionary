@@ -55,6 +55,7 @@ type Msg
   -------------------FIREBASE TEST THINGS DELETE
   | Click
   | ReceiveValue String
+  | Outside
 
 -- MODEL
 type alias Model =
