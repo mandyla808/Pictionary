@@ -33,5 +33,5 @@ firebase.database().ref("sharedModel/numPlayers").on("value", function(snapshot)
 })
 
 firebase.database().ref("sharedModel/roundPlaying").on("value", function(snapshot) {
-  app.ports.infoForElm.send({"tag": "sharedModel/numPlayers", "data": snapshot.val()})
+  app.ports.infoForElm.send({"tag": "sharedModel/roundPlaying", "data": snapshot.val()})
 })
