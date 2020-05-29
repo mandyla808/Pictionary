@@ -1,4 +1,4 @@
-  module Types exposing (..)
+module Types exposing (..)
 
 --Imports--
 import Browser
@@ -11,6 +11,7 @@ import Canvas.Settings exposing (..)
 import Canvas.Settings.Advanced exposing (..)
 import Canvas.Settings.Line exposing (..)
 import Array exposing (Array)
+import Json.Encode as E
 
 ----------------------------------------------------------------------
 
@@ -33,6 +34,9 @@ type alias Trace =
   , lastPoint: Canvas.Point
   }
 
+type alias GenericOutsideData =
+    { tag : String, data : E.Value }
+
 type Msg
   = None
   | Tick Posix
@@ -52,10 +56,11 @@ type Msg
   | ChangeColor Color
   | ChangeSize Float
 
-  -------------------FIREBASE TEST THINGS DELETE
-  | Click
-  | ReceiveValue String
-  | Outside
+  --Firebase
+  | ReceiveValue GenericOutsideData
+
+
+--  | Outside
 
 -- MODEL
 type alias Model =
@@ -76,10 +81,6 @@ type alias Model =
   , size : Float
   , currentScreen : Int
 
-
-
-  ----------------FIREBASE TEST DELETE
-  , count : Maybe Int
   }
 
 --FLAGS

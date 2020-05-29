@@ -5234,13 +5234,12 @@ var $avh4$elm_color$Color$RgbaSpace = F4(
 var $avh4$elm_color$Color$black = A4($avh4$elm_color$Color$RgbaSpace, 0 / 255, 0 / 255, 0 / 255, 1.0);
 var $author$project$Words$wordList = _List_fromArray(
 	['Angel', 'Eyeball', 'Pizza', 'Fireworks', 'Pumpkin', 'Baby', 'Flower', 'Rainbow', 'Beard', 'Giraffe', 'Glasses', 'Snowflake', 'Book', 'Stairs', 'Starfish', 'Bee', 'Igloo', 'Strawberry', 'Butterfly', 'Ladybug', 'Sun', 'Camera', 'Lamp', 'Tire', 'Cat', 'Lion', 'Toast', 'Church', 'Mailbox', 'Toothbrush', 'Crayon', 'Dolphin', 'Nose', 'Truck', 'Egg', 'Peanut', 'Laptop', 'Headphones', 'Key', 'Table', 'Bread', 'Monkey', 'Coronavirus', 'Wallet', 'Door', 'Window', 'Cloud', 'Regenstein', 'Mansueto', 'cs223', 'Ryerson', 'Ratner', 'Bartlett', 'Dean Boyer', 'Max Palevsky', 'Phoenix', 'Harper', 'Dollar Milkshake', 'Coffee']);
-var $author$project$Main$initModel = {color: $avh4$elm_color$Color$black, count: $elm$core$Maybe$Nothing, currentDrawer: $elm$core$Maybe$Nothing, currentScreen: 0, currentWord: $elm$core$Maybe$Nothing, drawnSegments: _List_Nil, gameTime: 0, numPlayers: 0, players: _List_Nil, restStart: 0, roundNumber: 0, roundPlaying: false, roundTime: 60, segments: $elm$core$Array$empty, size: 20.0, tracer: $elm$core$Maybe$Nothing, unusedWords: $author$project$Words$wordList};
+var $author$project$Main$initModel = {color: $avh4$elm_color$Color$black, currentDrawer: $elm$core$Maybe$Nothing, currentScreen: 0, currentWord: $elm$core$Maybe$Nothing, drawnSegments: _List_Nil, gameTime: 0, numPlayers: 0, players: _List_Nil, restStart: 0, roundNumber: 0, roundPlaying: false, roundTime: 60, segments: $elm$core$Array$empty, size: 20.0, tracer: $elm$core$Maybe$Nothing, unusedWords: $author$project$Words$wordList};
 var $elm$core$Platform$Cmd$batch = _Platform_batch;
 var $elm$core$Platform$Cmd$none = $elm$core$Platform$Cmd$batch(_List_Nil);
 var $author$project$Main$init = function (_v0) {
 	return _Utils_Tuple2($author$project$Main$initModel, $elm$core$Platform$Cmd$none);
 };
-var $author$project$Types$Click = {$: 'Click'};
 var $author$project$Types$NextScreen = function (a) {
 	return {$: 'NextScreen', a: a};
 };
@@ -5666,8 +5665,24 @@ var $elm$time$Time$every = F2(
 		return $elm$time$Time$subscription(
 			A2($elm$time$Time$Every, interval, tagger));
 	});
+var $elm$json$Json$Decode$andThen = _Json_andThen;
+var $elm$json$Json$Decode$field = _Json_decodeField;
 var $elm$json$Json$Decode$string = _Json_decodeString;
-var $author$project$Main$firebaseRead = _Platform_incomingPort('firebaseRead', $elm$json$Json$Decode$string);
+var $elm$json$Json$Decode$value = _Json_decodeValue;
+var $author$project$Main$infoForElm = _Platform_incomingPort(
+	'infoForElm',
+	A2(
+		$elm$json$Json$Decode$andThen,
+		function (tag) {
+			return A2(
+				$elm$json$Json$Decode$andThen,
+				function (data) {
+					return $elm$json$Json$Decode$succeed(
+						{data: data, tag: tag});
+				},
+				A2($elm$json$Json$Decode$field, 'data', $elm$json$Json$Decode$value));
+		},
+		A2($elm$json$Json$Decode$field, 'tag', $elm$json$Json$Decode$string)));
 var $elm$browser$Browser$AnimationManager$Delta = function (a) {
 	return {$: 'Delta', a: a};
 };
@@ -5790,217 +5805,13 @@ var $elm$browser$Browser$AnimationManager$onAnimationFrameDelta = function (tagg
 		$elm$browser$Browser$AnimationManager$Delta(tagger));
 };
 var $elm$browser$Browser$Events$onAnimationFrameDelta = $elm$browser$Browser$AnimationManager$onAnimationFrameDelta;
-var $elm$browser$Browser$Events$Document = {$: 'Document'};
-var $elm$browser$Browser$Events$MySub = F3(
-	function (a, b, c) {
-		return {$: 'MySub', a: a, b: b, c: c};
-	});
-var $elm$browser$Browser$Events$State = F2(
-	function (subs, pids) {
-		return {pids: pids, subs: subs};
-	});
-var $elm$browser$Browser$Events$init = $elm$core$Task$succeed(
-	A2($elm$browser$Browser$Events$State, _List_Nil, $elm$core$Dict$empty));
-var $elm$browser$Browser$Events$nodeToKey = function (node) {
-	if (node.$ === 'Document') {
-		return 'd_';
-	} else {
-		return 'w_';
-	}
-};
-var $elm$browser$Browser$Events$addKey = function (sub) {
-	var node = sub.a;
-	var name = sub.b;
-	return _Utils_Tuple2(
-		_Utils_ap(
-			$elm$browser$Browser$Events$nodeToKey(node),
-			name),
-		sub);
-};
-var $elm$core$Dict$fromList = function (assocs) {
-	return A3(
-		$elm$core$List$foldl,
-		F2(
-			function (_v0, dict) {
-				var key = _v0.a;
-				var value = _v0.b;
-				return A3($elm$core$Dict$insert, key, value, dict);
-			}),
-		$elm$core$Dict$empty,
-		assocs);
-};
-var $elm$browser$Browser$Events$Event = F2(
-	function (key, event) {
-		return {event: event, key: key};
-	});
-var $elm$browser$Browser$Events$spawn = F3(
-	function (router, key, _v0) {
-		var node = _v0.a;
-		var name = _v0.b;
-		var actualNode = function () {
-			if (node.$ === 'Document') {
-				return _Browser_doc;
-			} else {
-				return _Browser_window;
-			}
-		}();
-		return A2(
-			$elm$core$Task$map,
-			function (value) {
-				return _Utils_Tuple2(key, value);
-			},
-			A3(
-				_Browser_on,
-				actualNode,
-				name,
-				function (event) {
-					return A2(
-						$elm$core$Platform$sendToSelf,
-						router,
-						A2($elm$browser$Browser$Events$Event, key, event));
-				}));
-	});
-var $elm$core$Dict$union = F2(
-	function (t1, t2) {
-		return A3($elm$core$Dict$foldl, $elm$core$Dict$insert, t2, t1);
-	});
-var $elm$browser$Browser$Events$onEffects = F3(
-	function (router, subs, state) {
-		var stepRight = F3(
-			function (key, sub, _v6) {
-				var deads = _v6.a;
-				var lives = _v6.b;
-				var news = _v6.c;
-				return _Utils_Tuple3(
-					deads,
-					lives,
-					A2(
-						$elm$core$List$cons,
-						A3($elm$browser$Browser$Events$spawn, router, key, sub),
-						news));
-			});
-		var stepLeft = F3(
-			function (_v4, pid, _v5) {
-				var deads = _v5.a;
-				var lives = _v5.b;
-				var news = _v5.c;
-				return _Utils_Tuple3(
-					A2($elm$core$List$cons, pid, deads),
-					lives,
-					news);
-			});
-		var stepBoth = F4(
-			function (key, pid, _v2, _v3) {
-				var deads = _v3.a;
-				var lives = _v3.b;
-				var news = _v3.c;
-				return _Utils_Tuple3(
-					deads,
-					A3($elm$core$Dict$insert, key, pid, lives),
-					news);
-			});
-		var newSubs = A2($elm$core$List$map, $elm$browser$Browser$Events$addKey, subs);
-		var _v0 = A6(
-			$elm$core$Dict$merge,
-			stepLeft,
-			stepBoth,
-			stepRight,
-			state.pids,
-			$elm$core$Dict$fromList(newSubs),
-			_Utils_Tuple3(_List_Nil, $elm$core$Dict$empty, _List_Nil));
-		var deadPids = _v0.a;
-		var livePids = _v0.b;
-		var makeNewPids = _v0.c;
-		return A2(
-			$elm$core$Task$andThen,
-			function (pids) {
-				return $elm$core$Task$succeed(
-					A2(
-						$elm$browser$Browser$Events$State,
-						newSubs,
-						A2(
-							$elm$core$Dict$union,
-							livePids,
-							$elm$core$Dict$fromList(pids))));
-			},
-			A2(
-				$elm$core$Task$andThen,
-				function (_v1) {
-					return $elm$core$Task$sequence(makeNewPids);
-				},
-				$elm$core$Task$sequence(
-					A2($elm$core$List$map, $elm$core$Process$kill, deadPids))));
-	});
-var $elm$core$List$maybeCons = F3(
-	function (f, mx, xs) {
-		var _v0 = f(mx);
-		if (_v0.$ === 'Just') {
-			var x = _v0.a;
-			return A2($elm$core$List$cons, x, xs);
-		} else {
-			return xs;
-		}
-	});
-var $elm$core$List$filterMap = F2(
-	function (f, xs) {
-		return A3(
-			$elm$core$List$foldr,
-			$elm$core$List$maybeCons(f),
-			_List_Nil,
-			xs);
-	});
-var $elm$browser$Browser$Events$onSelfMsg = F3(
-	function (router, _v0, state) {
-		var key = _v0.key;
-		var event = _v0.event;
-		var toMessage = function (_v2) {
-			var subKey = _v2.a;
-			var _v3 = _v2.b;
-			var node = _v3.a;
-			var name = _v3.b;
-			var decoder = _v3.c;
-			return _Utils_eq(subKey, key) ? A2(_Browser_decodeEvent, decoder, event) : $elm$core$Maybe$Nothing;
-		};
-		var messages = A2($elm$core$List$filterMap, toMessage, state.subs);
-		return A2(
-			$elm$core$Task$andThen,
-			function (_v1) {
-				return $elm$core$Task$succeed(state);
-			},
-			$elm$core$Task$sequence(
-				A2(
-					$elm$core$List$map,
-					$elm$core$Platform$sendToApp(router),
-					messages)));
-	});
-var $elm$browser$Browser$Events$subMap = F2(
-	function (func, _v0) {
-		var node = _v0.a;
-		var name = _v0.b;
-		var decoder = _v0.c;
-		return A3(
-			$elm$browser$Browser$Events$MySub,
-			node,
-			name,
-			A2($elm$json$Json$Decode$map, func, decoder));
-	});
-_Platform_effectManagers['Browser.Events'] = _Platform_createManager($elm$browser$Browser$Events$init, $elm$browser$Browser$Events$onEffects, $elm$browser$Browser$Events$onSelfMsg, 0, $elm$browser$Browser$Events$subMap);
-var $elm$browser$Browser$Events$subscription = _Platform_leaf('Browser.Events');
-var $elm$browser$Browser$Events$on = F3(
-	function (node, name, decoder) {
-		return $elm$browser$Browser$Events$subscription(
-			A3($elm$browser$Browser$Events$MySub, node, name, decoder));
-	});
-var $elm$browser$Browser$Events$onClick = A2($elm$browser$Browser$Events$on, $elm$browser$Browser$Events$Document, 'click');
 var $author$project$Main$subscriptions = function (model) {
 	return $elm$core$Platform$Sub$batch(
 		_List_fromArray(
 			[
-				A2($elm$time$Time$every, 1000, $author$project$Types$Tick),
+				A2($elm$time$Time$every, 2000, $author$project$Types$Tick),
 				$elm$browser$Browser$Events$onAnimationFrameDelta($author$project$Types$NextScreen),
-				$elm$browser$Browser$Events$onClick(
-				$elm$json$Json$Decode$succeed($author$project$Types$Click)),
-				$author$project$Main$firebaseRead($author$project$Types$ReceiveValue)
+				$author$project$Main$infoForElm($author$project$Types$ReceiveValue)
 			]));
 };
 var $author$project$Types$NewDrawer = function (a) {
@@ -6377,6 +6188,14 @@ var $author$project$Updates$addSegment = F3(
 					{lastPoint: p, prevMidpoint: newPoint})
 			});
 	});
+var $elm$core$Basics$not = _Basics_not;
+var $author$project$Updates$allowGuess = function (p) {
+	return (!p.isDrawing) ? _Utils_update(
+		p,
+		{isGuessing: true}) : p;
+};
+var $elm$json$Json$Decode$bool = _Json_decodeBool;
+var $elm$json$Json$Encode$bool = _Json_wrap;
 var $elm$core$List$append = F2(
 	function (xs, ys) {
 		if (!ys.b) {
@@ -6651,6 +6470,7 @@ var $elm_community$random_extra$Random$List$choose = function (list) {
 			gen);
 	}
 };
+var $elm$json$Json$Decode$decodeValue = _Json_run;
 var $joakin$elm_canvas$Canvas$Settings$fill = function (color) {
 	return $joakin$elm_canvas$Canvas$Internal$Canvas$SettingDrawOp(
 		$joakin$elm_canvas$Canvas$Internal$Canvas$Fill(color));
@@ -6724,8 +6544,6 @@ var $author$project$Updates$endSegment = F3(
 				tracer: $elm$core$Maybe$Nothing
 			});
 	});
-var $author$project$Main$firebaseWrite = _Platform_outgoingPort('firebaseWrite', $elm$json$Json$Encode$string);
-var $author$project$Main$firebaseWrite2 = _Platform_outgoingPort('firebaseWrite2', $elm$json$Json$Encode$string);
 var $elm$random$Random$Generate = function (a) {
 	return {$: 'Generate', a: a};
 };
@@ -6791,9 +6609,25 @@ var $elm$random$Random$generate = F2(
 			$elm$random$Random$Generate(
 				A2($elm$random$Random$map, tagger, generator)));
 	});
+var $author$project$Main$infoForJS = _Platform_outgoingPort(
+	'infoForJS',
+	function ($) {
+		return $elm$json$Json$Encode$object(
+			_List_fromArray(
+				[
+					_Utils_Tuple2(
+					'data',
+					$elm$core$Basics$identity($.data)),
+					_Utils_Tuple2(
+					'tag',
+					$elm$json$Json$Encode$string($.tag))
+				]));
+	});
 var $author$project$Main$initPlayer = function (n) {
 	return {currentGuess: '', guesses: _List_Nil, identity: n, isCorrect: false, isDrawing: false, isGuessing: false, isNamed: false, name: '', score: 0};
 };
+var $elm$json$Json$Decode$int = _Json_decodeInt;
+var $elm$json$Json$Encode$int = _Json_wrap;
 var $author$project$Updates$updatePlayer = F2(
 	function (players, player) {
 		if (!players.b) {
@@ -6830,7 +6664,6 @@ var $author$project$Updates$newWordUpdate = F3(
 			model,
 			{currentWord: cw, unusedWords: ws});
 	});
-var $elm$core$Basics$not = _Basics_not;
 var $author$project$Updates$playerGuessUpdate = F3(
 	function (model, player, guess) {
 		var _v0 = model.currentWord;
@@ -6860,47 +6693,6 @@ var $author$project$Updates$playerGuessUpdate = F3(
 			}
 		}
 	});
-var $author$project$Updates$roundOverUpdate = function (model) {
-	var playerRoundReset = function (p) {
-		return _Utils_update(
-			p,
-			{guesses: _List_Nil, isCorrect: false, isDrawing: false, isGuessing: false});
-	};
-	var newModel = $author$project$Updates$drawSegments(model);
-	return _Utils_update(
-		newModel,
-		{
-			color: $avh4$elm_color$Color$black,
-			currentDrawer: $elm$core$Maybe$Nothing,
-			currentWord: $elm$core$Maybe$Nothing,
-			drawnSegments: _List_Nil,
-			players: A2($elm$core$List$map, playerRoundReset, model.players),
-			restStart: model.gameTime,
-			roundPlaying: false,
-			roundTime: 0,
-			segments: $elm$core$Array$empty,
-			size: 20.0,
-			tracer: $elm$core$Maybe$Nothing
-		});
-};
-var $author$project$Updates$allowGuess = function (p) {
-	return (!p.isDrawing) ? _Utils_update(
-		p,
-		{isGuessing: true}) : p;
-};
-var $author$project$Updates$startRoundUpdate = function (model) {
-	return _Utils_update(
-		model,
-		{
-			drawnSegments: _List_Nil,
-			players: A2($elm$core$List$map, $author$project$Updates$allowGuess, model.players),
-			roundNumber: model.roundNumber + 1,
-			roundPlaying: true,
-			roundTime: 60,
-			segments: $elm$core$Array$empty,
-			tracer: $elm$core$Maybe$Nothing
-		});
-};
 var $tricycle$system_actor_model$System$Message$toCmd = A2(
 	$elm$core$Basics$composeL,
 	$elm$core$Task$perform($elm$core$Basics$identity),
@@ -6910,32 +6702,11 @@ var $author$project$Main$update = F2(
 		switch (msg.$) {
 			case 'None':
 				return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
-			case 'Click':
-				var _v1 = model.count;
-				if (_v1.$ === 'Just') {
-					var n = _v1.a;
-					return _Utils_Tuple2(
-						model,
-						$author$project$Main$firebaseWrite(
-							$elm$core$String$fromInt(n + 1)));
-				} else {
-					return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
-				}
-			case 'ReceiveValue':
-				var value = msg.a;
-				var _v2 = $elm$core$String$toInt(value);
-				if (_v2.$ === 'Just') {
-					var n = _v2.a;
-					return _Utils_Tuple2(
-						_Utils_update(
-							model,
-							{
-								count: $elm$core$Maybe$Just(n)
-							}),
-						$elm$core$Platform$Cmd$none);
-				} else {
-					return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
-				}
+			case 'NextScreen':
+				var _float = msg.a;
+				return _Utils_Tuple2(
+					$author$project$Updates$drawSegments(model),
+					$elm$core$Platform$Cmd$none);
 			case 'Tick':
 				var t = msg.a;
 				var stillGuessing = function (ps) {
@@ -6948,16 +6719,27 @@ var $author$project$Main$update = F2(
 					}
 				};
 				return _Utils_Tuple2(
-					_Utils_update(
-						model,
-						{gameTime: model.gameTime + 1, roundTime: model.roundTime - 1}),
-					(model.roundTime === 1) ? $tricycle$system_actor_model$System$Message$toCmd($author$project$Types$RoundOver) : (((model.gameTime - model.restStart) === 5) ? $tricycle$system_actor_model$System$Message$toCmd($author$project$Types$StartRound) : ((!stillGuessing(model.players)) ? $tricycle$system_actor_model$System$Message$toCmd($author$project$Types$RoundOver) : $elm$core$Platform$Cmd$none)));
+					model,
+					$elm$core$Platform$Cmd$batch(
+						_List_fromArray(
+							[
+								(model.roundTime === 1) ? $tricycle$system_actor_model$System$Message$toCmd($author$project$Types$RoundOver) : (((model.gameTime - model.restStart) === 5) ? $tricycle$system_actor_model$System$Message$toCmd($author$project$Types$StartRound) : ((!stillGuessing(model.players)) ? $tricycle$system_actor_model$System$Message$toCmd($author$project$Types$RoundOver) : $elm$core$Platform$Cmd$none)),
+								$author$project$Main$infoForJS(
+								{
+									data: $elm$json$Json$Encode$int(model.roundTime - 1),
+									tag: 'sharedModel/roundTime'
+								}),
+								$author$project$Main$infoForJS(
+								{
+									data: $elm$json$Json$Encode$int(model.gameTime + 1),
+									tag: 'sharedModel/gameTime'
+								})
+							])));
 			case 'NewPlayer':
 				return _Utils_Tuple2(
 					_Utils_update(
 						model,
 						{
-							numPlayers: model.numPlayers + 1,
 							players: _Utils_ap(
 								model.players,
 								_List_fromArray(
@@ -6965,7 +6747,11 @@ var $author$project$Main$update = F2(
 										$author$project$Main$initPlayer(model.numPlayers)
 									]))
 						}),
-					$author$project$Main$firebaseWrite2('512'));
+					$author$project$Main$infoForJS(
+						{
+							data: $elm$json$Json$Encode$int(model.numPlayers + 1),
+							tag: 'sharedModel/numPlayers'
+						}));
 			case 'UpdateName':
 				var player = msg.a;
 				var newName = msg.b;
@@ -7004,11 +6790,6 @@ var $author$project$Main$update = F2(
 							players: A2($author$project$Updates$updatePlayer, model.players, updatedPlayer)
 						}),
 					$elm$core$Platform$Cmd$none);
-			case 'NextScreen':
-				var _float = msg.a;
-				return _Utils_Tuple2(
-					$author$project$Updates$drawSegments(model),
-					$elm$core$Platform$Cmd$none);
 			case 'Guess':
 				var player = msg.a;
 				var guess = msg.b;
@@ -7017,24 +6798,68 @@ var $author$project$Main$update = F2(
 					$elm$core$Platform$Cmd$none);
 			case 'RoundOver':
 				return _Utils_Tuple2(
-					$author$project$Updates$roundOverUpdate(model),
-					$elm$core$Platform$Cmd$none);
+					function () {
+						var playerRoundReset = function (p) {
+							return _Utils_update(
+								p,
+								{guesses: _List_Nil, isCorrect: false, isDrawing: false, isGuessing: false});
+						};
+						var newModel = $author$project$Updates$drawSegments(model);
+						return _Utils_update(
+							newModel,
+							{
+								color: $avh4$elm_color$Color$black,
+								currentDrawer: $elm$core$Maybe$Nothing,
+								currentWord: $elm$core$Maybe$Nothing,
+								drawnSegments: _List_Nil,
+								players: A2($elm$core$List$map, playerRoundReset, model.players),
+								segments: $elm$core$Array$empty,
+								size: 20.0,
+								tracer: $elm$core$Maybe$Nothing
+							});
+					}(),
+					$elm$core$Platform$Cmd$batch(
+						_List_fromArray(
+							[
+								$author$project$Main$infoForJS(
+								{
+									data: $elm$json$Json$Encode$int(0),
+									tag: 'sharedModel/roundTime'
+								}),
+								$author$project$Main$infoForJS(
+								{
+									data: $elm$json$Json$Encode$bool(false),
+									tag: 'sharedModel/roundPlaying'
+								}),
+								$author$project$Main$infoForJS(
+								{
+									data: $elm$json$Json$Encode$int(model.gameTime),
+									tag: 'sharedModel/restStart'
+								})
+							])));
 			case 'NewWord':
-				var _v4 = msg.a;
-				var newWord = _v4.a;
-				var words = _v4.b;
+				var _v2 = msg.a;
+				var newWord = _v2.a;
+				var words = _v2.b;
 				return _Utils_Tuple2(
 					A3($author$project$Updates$newWordUpdate, model, newWord, words),
 					$elm$core$Platform$Cmd$none);
 			case 'NewDrawer':
-				var _v5 = msg.a;
-				var drawer = _v5.a;
+				var _v3 = msg.a;
+				var drawer = _v3.a;
 				return _Utils_Tuple2(
 					A2($author$project$Updates$newDrawerUpdate, model, drawer),
 					$elm$core$Platform$Cmd$none);
 			case 'StartRound':
 				return _Utils_Tuple2(
-					$author$project$Updates$startRoundUpdate(model),
+					_Utils_update(
+						model,
+						{
+							drawnSegments: _List_Nil,
+							players: A2($elm$core$List$map, $author$project$Updates$allowGuess, model.players),
+							segments: $elm$core$Array$empty,
+							tracer: $elm$core$Maybe$Nothing
+						}),
 					$elm$core$Platform$Cmd$batch(
 						_List_fromArray(
 							[
@@ -7045,7 +6870,22 @@ var $author$project$Main$update = F2(
 								A2(
 								$elm$random$Random$generate,
 								$author$project$Types$NewDrawer,
-								$elm_community$random_extra$Random$List$choose(model.players))
+								$elm_community$random_extra$Random$List$choose(model.players)),
+								$author$project$Main$infoForJS(
+								{
+									data: $elm$json$Json$Encode$int(60),
+									tag: 'sharedModel/roundTime'
+								}),
+								$author$project$Main$infoForJS(
+								{
+									data: $elm$json$Json$Encode$int(model.roundNumber + 1),
+									tag: 'sharedModel/roundNumber'
+								}),
+								$author$project$Main$infoForJS(
+								{
+									data: $elm$json$Json$Encode$bool(true),
+									tag: 'sharedModel/roundPlaying'
+								})
 							])));
 			case 'BeginDraw':
 				var point = msg.a;
@@ -7059,9 +6899,9 @@ var $author$project$Main$update = F2(
 					$elm$core$Platform$Cmd$none);
 			case 'ContDraw':
 				var point = msg.a;
-				var _v6 = model.tracer;
-				if (_v6.$ === 'Just') {
-					var x = _v6.a;
+				var _v4 = model.tracer;
+				if (_v4.$ === 'Just') {
+					var x = _v4.a;
 					return _Utils_Tuple2(
 						A3($author$project$Updates$addSegment, point, x, model),
 						$elm$core$Platform$Cmd$none);
@@ -7070,9 +6910,9 @@ var $author$project$Main$update = F2(
 				}
 			case 'EndDraw':
 				var point = msg.a;
-				var _v7 = model.tracer;
-				if (_v7.$ === 'Just') {
-					var x = _v7.a;
+				var _v5 = model.tracer;
+				if (_v5.$ === 'Just') {
+					var x = _v5.a;
 					return _Utils_Tuple2(
 						A3($author$project$Updates$endSegment, point, x, model),
 						$elm$core$Platform$Cmd$none);
@@ -7086,13 +6926,92 @@ var $author$project$Main$update = F2(
 						model,
 						{color: c}),
 					$elm$core$Platform$Cmd$none);
-			default:
+			case 'ChangeSize':
 				var f = msg.a;
 				return _Utils_Tuple2(
 					_Utils_update(
 						model,
 						{size: f}),
 					$elm$core$Platform$Cmd$none);
+			default:
+				var outsideInfo = msg.a;
+				var _v6 = outsideInfo.tag;
+				switch (_v6) {
+					case 'sharedModel/roundTime':
+						var _v7 = A2($elm$json$Json$Decode$decodeValue, $elm$json$Json$Decode$int, outsideInfo.data);
+						if (_v7.$ === 'Err') {
+							return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
+						} else {
+							var n = _v7.a;
+							return _Utils_Tuple2(
+								_Utils_update(
+									model,
+									{roundTime: n}),
+								$elm$core$Platform$Cmd$none);
+						}
+					case 'sharedModel/gameTime':
+						var _v8 = A2($elm$json$Json$Decode$decodeValue, $elm$json$Json$Decode$int, outsideInfo.data);
+						if (_v8.$ === 'Err') {
+							return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
+						} else {
+							var n = _v8.a;
+							return _Utils_Tuple2(
+								_Utils_update(
+									model,
+									{gameTime: n}),
+								$elm$core$Platform$Cmd$none);
+						}
+					case 'sharedModel/restStart':
+						var _v9 = A2($elm$json$Json$Decode$decodeValue, $elm$json$Json$Decode$int, outsideInfo.data);
+						if (_v9.$ === 'Err') {
+							return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
+						} else {
+							var n = _v9.a;
+							return _Utils_Tuple2(
+								_Utils_update(
+									model,
+									{restStart: n}),
+								$elm$core$Platform$Cmd$none);
+						}
+					case 'sharedModel/numPlayers':
+						var _v10 = A2($elm$json$Json$Decode$decodeValue, $elm$json$Json$Decode$int, outsideInfo.data);
+						if (_v10.$ === 'Err') {
+							return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
+						} else {
+							var n = _v10.a;
+							return _Utils_Tuple2(
+								_Utils_update(
+									model,
+									{numPlayers: n}),
+								$elm$core$Platform$Cmd$none);
+						}
+					case 'sharedModel/roundNumber':
+						var _v11 = A2($elm$json$Json$Decode$decodeValue, $elm$json$Json$Decode$int, outsideInfo.data);
+						if (_v11.$ === 'Err') {
+							return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
+						} else {
+							var n = _v11.a;
+							return _Utils_Tuple2(
+								_Utils_update(
+									model,
+									{roundNumber: n}),
+								$elm$core$Platform$Cmd$none);
+						}
+					case 'sharedModel/roundPlaying':
+						var _v12 = A2($elm$json$Json$Decode$decodeValue, $elm$json$Json$Decode$bool, outsideInfo.data);
+						if (_v12.$ === 'Err') {
+							return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
+						} else {
+							var b = _v12.a;
+							return _Utils_Tuple2(
+								_Utils_update(
+									model,
+									{roundPlaying: b}),
+								$elm$core$Platform$Cmd$none);
+						}
+					default:
+						return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
+				}
 		}
 	});
 var $author$project$Types$BeginDraw = function (a) {
@@ -7591,6 +7510,24 @@ var $mdgriffith$elm_ui$Internal$Model$Style = F2(
 var $mdgriffith$elm_ui$Internal$Style$dot = function (c) {
 	return '.' + c;
 };
+var $elm$core$List$maybeCons = F3(
+	function (f, mx, xs) {
+		var _v0 = f(mx);
+		if (_v0.$ === 'Just') {
+			var x = _v0.a;
+			return A2($elm$core$List$cons, x, xs);
+		} else {
+			return xs;
+		}
+	});
+var $elm$core$List$filterMap = F2(
+	function (f, xs) {
+		return A3(
+			$elm$core$List$foldr,
+			$elm$core$List$maybeCons(f),
+			_List_Nil,
+			xs);
+	});
 var $elm$core$String$fromFloat = _String_fromNumber;
 var $mdgriffith$elm_ui$Internal$Model$formatColor = function (_v0) {
 	var red = _v0.a;
@@ -12947,8 +12884,6 @@ var $mpizenberg$elm_pointer_events$Html$Events$Extra$Mouse$buttonFromId = functi
 			return $mpizenberg$elm_pointer_events$Html$Events$Extra$Mouse$ErrorButton;
 	}
 };
-var $elm$json$Json$Decode$field = _Json_decodeField;
-var $elm$json$Json$Decode$int = _Json_decodeInt;
 var $mpizenberg$elm_pointer_events$Html$Events$Extra$Mouse$buttonDecoder = A2(
 	$elm$json$Json$Decode$map,
 	$mpizenberg$elm_pointer_events$Html$Events$Extra$Mouse$buttonFromId,
@@ -12966,7 +12901,6 @@ var $mpizenberg$elm_pointer_events$Internal$Decode$Keys = F3(
 	function (alt, ctrl, shift) {
 		return {alt: alt, ctrl: ctrl, shift: shift};
 	});
-var $elm$json$Json$Decode$bool = _Json_decodeBool;
 var $elm$json$Json$Decode$map3 = _Json_map3;
 var $mpizenberg$elm_pointer_events$Internal$Decode$keys = A4(
 	$elm$json$Json$Decode$map3,
@@ -13755,7 +13689,6 @@ var $joakin$elm_canvas$Canvas$renderClear = F4(
 			A4($joakin$elm_canvas$Canvas$Internal$CustomElementJsonApi$clearRect, x, y, w, h),
 			cmds);
 	});
-var $elm$json$Json$Encode$bool = _Json_wrap;
 var $joakin$elm_canvas$Canvas$Internal$CustomElementJsonApi$arc = F6(
 	function (x, y, radius, startAngle, endAngle, anticlockwise) {
 		return A2(
@@ -14276,8 +14209,6 @@ var $joakin$elm_canvas$Canvas$render = function (entities) {
 var $joakin$elm_canvas$Canvas$Internal$Texture$TImage = function (a) {
 	return {$: 'TImage', a: a};
 };
-var $elm$json$Json$Decode$andThen = _Json_andThen;
-var $elm$json$Json$Decode$value = _Json_decodeValue;
 var $joakin$elm_canvas$Canvas$Internal$Texture$decodeTextureImage = A2(
 	$elm$json$Json$Decode$andThen,
 	function (image) {
@@ -14628,16 +14559,6 @@ var $author$project$Main$view = function (model) {
 					$elm$core$List$map,
 					$author$project$Main$applyHtmlDiv,
 					A2($elm$core$List$map, $author$project$Main$viewPlayerInfo, model.players))),
-				function () {
-				var _v6 = model.count;
-				if (_v6.$ === 'Just') {
-					var n = _v6.a;
-					return $elm$html$Html$text(
-						'The worldwide count is ' + ($elm$core$String$fromInt(n) + '.'));
-				} else {
-					return $elm$html$Html$text('Loading worldwide count...');
-				}
-			}(),
 				A3(
 				$joakin$elm_canvas$Canvas$toHtml,
 				_Utils_Tuple2(750, 750),

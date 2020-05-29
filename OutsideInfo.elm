@@ -33,5 +33,5 @@ type InfoForElm
 type alias GenericOutsideData =
     { tag : String, data : Json.Encode.Value }
 
-port infoForOutside : GenericOutsideData -> Cmd msg
-port infoForElm : (GenericOutsideData -> msg) -> Sub msg
+--port infoForOutside : GenericOutsideData -> Cmd msg
+--port infoForElm : (GenericOutsideData -> msg) -> Sub msg

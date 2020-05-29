@@ -12,7 +12,9 @@ import Time exposing (Posix)
 import Random.List
 import Task.Extra exposing (message)
 import System.Message exposing (toCmd)
-import Json.Decode
+
+import Json.Decode as D
+import Json.Encode as E
 
 import Types exposing(..)
 import Updates exposing (..)
@@ -32,10 +34,12 @@ import Element.Border
 
 ----------------------------------------------------------------------
 -- Ports
+port infoForJS : GenericOutsideData -> Cmd msg
+port infoForElm : (GenericOutsideData -> msg) -> Sub msg
+
 port firebaseWrite : String -> Cmd msg
 port firebaseRead : (String -> msg) -> Sub msg
 
-port firebaseWrite2 : String -> Cmd msg
 
 main : Program Flags Model Msg
 main =
@@ -74,7 +78,7 @@ initModel =
   , roundNumber = 0
   , roundTime = 60
   , gameTime = 0
-  , restStart = 0 -- restStart = 0?
+  , restStart = 0
   , roundPlaying = False -- Is the round still on?
   , segments = Array.empty
   , drawnSegments = []
@@ -82,22 +86,15 @@ initModel =
   , color = Color.black
   , size = 20.0
   , currentScreen = 0
-
-  ----------TEST VALUE FOR FIREBASE DELETE
-  , count = Nothing
   }
 
 --SUBSCRIPTIONS
 subscriptions : Model -> Sub Msg
 subscriptions model =
   Sub.batch
-  [ Time.every 1000 Tick
+  [ Time.every 2000 Tick
   , Browser.Events.onAnimationFrameDelta NextScreen
-
-
-  ----------------FIREBASE TEST SUBSCRIPTIONS DELETE
-  , Browser.Events.onClick (Json.Decode.succeed Click)
-  , firebaseRead ReceiveValue
+  , infoForElm ReceiveValue
   ]
 
 --UPDATE
@@ -107,40 +104,16 @@ update msg model =
     None ->
       (model, Cmd.none)
 
---------------FIREBASE TEST MESSAGES DELETE
-    Click ->
-      case model.count of
-        Just n ->
-          ( model
-          , firebaseWrite (String.fromInt (n + 1))
-          )
-
-        Nothing ->
-          ( model
-          , Cmd.none
-          )
-
-    ReceiveValue value ->
-      case String.toInt value of
-        Just n ->
-          ( { model | count = Just n }
-          , Cmd.none
-          )
-
-        Nothing ->
-          ( model
-          , Cmd.none
-          )
 ------------------------ ATTEMPTING FIRBASE UPDATES
-    Outside infoForElm ->
+  {-  Outside infoForElm ->
       case infoForElm of
         BoardChanged l ->
-          ({model | drawnSegments = l } ,Cmd.none)
+          ({model | drawnSegments = l } ,Cmd.none)-}
 
     NextScreen float ->
-      (drawSegments model , sendInfoOutside Draw)
+      (drawSegments model , Cmd.none)
+  --    (drawSegments model , sendInfoOutside Draw)
 ---------------------------------------------------
-
     Tick t ->
       let
         --Returns true if any player is still guessing
@@ -150,18 +123,23 @@ update msg model =
               [] -> False
               p :: rest -> (not p.isCorrect) || (stillGuessing rest)
       in
-        ({model | roundTime = model.roundTime-1
-                   , gameTime = model.gameTime + 1},
-        if model.roundTime == 1 then toCmd RoundOver
-        else if (model.gameTime - model.restStart == 5) then toCmd StartRound
-        else if (not (stillGuessing model.players)) then toCmd RoundOver
-        else Cmd.none)
+        (model ,
+          Cmd.batch[
+            if model.roundTime == 1 then toCmd RoundOver
+            else if (model.gameTime - model.restStart == 5) then toCmd StartRound
+            else if (not (stillGuessing model.players)) then toCmd RoundOver
+            else Cmd.none
+
+            , infoForJS {tag = "sharedModel/roundTime", data = E.int (model.roundTime-1)}
+            , infoForJS {tag = "sharedModel/gameTime", data = E.int (model.gameTime + 1)}
+            ])
 
     --Adds player when a button ("Click to join!") is hit
     NewPlayer ->
-      ({model | numPlayers = model.numPlayers + 1
-              , players = model.players ++ [(initPlayer model.numPlayers)]
-              }, firebaseWrite2 ("512"))
+      ({model | players = model.players ++ [(initPlayer model.numPlayers)]
+              }
+        , infoForJS {tag = "sharedModel/numPlayers", data = E.int (model.numPlayers + 1)}
+        )
 
     UpdateName player newName ->
       let
@@ -193,7 +171,27 @@ update msg model =
       (playerGuessUpdate model player guess, Cmd.none)
 
     RoundOver ->
-      (roundOverUpdate model, Cmd.none)
+      (  let
+          playerRoundReset : Player -> Player
+          playerRoundReset p = {p | isGuessing = False, isDrawing = False, isCorrect = False, guesses = []}
+          newModel = drawSegments model
+        in
+          {newModel | currentWord = Nothing,
+                   currentDrawer = Nothing,
+        --           roundPlaying = False,
+                   players = List.map playerRoundReset model.players,
+          --         restStart = model.gameTime,
+                   segments = Array.empty,
+                   drawnSegments = [],
+                   tracer = Nothing,
+                   color = Color.black,
+                   size = 20.0
+                  }
+          , Cmd.batch [
+            infoForJS {tag = "sharedModel/roundTime", data = E.int 0}
+          , infoForJS {tag = "sharedModel/roundPlaying", data = E.bool False}
+          , infoForJS {tag = "sharedModel/restStart" , data = E.int model.gameTime}
+         ])
 
     NewWord (newWord, words) ->
       (newWordUpdate model newWord words, Cmd.none)
@@ -202,9 +200,19 @@ update msg model =
       (newDrawerUpdate model drawer, Cmd.none)
 
     StartRound ->
-      (startRoundUpdate model, Cmd.batch[
-        Random.generate NewWord (Random.List.choose model.unusedWords),
-        Random.generate NewDrawer (Random.List.choose model.players)
+      ({model | --roundNumber = model.roundNumber + 1
+              -- , roundPlaying = True
+                players = List.map allowGuess model.players
+               , segments = Array.empty
+               , drawnSegments = []
+               , tracer = Nothing
+          }
+        , Cmd.batch[
+          Random.generate NewWord (Random.List.choose model.unusedWords)
+        , Random.generate NewDrawer (Random.List.choose model.players)
+        , infoForJS {tag = "sharedModel/roundTime", data = E.int 60}
+        , infoForJS {tag = "sharedModel/roundNumber", data = E.int (model.roundNumber + 1)}
+        , infoForJS {tag = "sharedModel/roundPlaying", data = E.bool True}
         ])
 
     BeginDraw point ->
@@ -226,6 +234,61 @@ update msg model =
       ( {model | color = c} , Cmd.none)
     ChangeSize f ->
       ( {model | size = f} , Cmd.none)
+
+
+    ReceiveValue outsideInfo ->
+
+      case outsideInfo.tag of
+
+        "sharedModel/roundTime" ->
+          case D.decodeValue D.int outsideInfo.data of
+            Err _ -> (model, Cmd.none)
+            Ok n ->
+              ( { model | roundTime = n}
+              , Cmd.none
+              )
+
+        "sharedModel/gameTime" ->
+          case D.decodeValue D.int outsideInfo.data of
+            Err _ -> (model, Cmd.none)
+            Ok n ->
+              ( {model | gameTime = n}
+              , Cmd.none
+              )
+
+        "sharedModel/restStart" ->
+          case D.decodeValue D.int outsideInfo.data of
+            Err _ -> (model, Cmd.none)
+            Ok n ->
+              ( {model | restStart = n}
+              , Cmd.none
+              )
+
+        "sharedModel/numPlayers" ->
+          case D.decodeValue D.int outsideInfo.data of
+            Err _ -> (model, Cmd.none)
+            Ok n ->
+              ( {model | numPlayers = n}
+              , Cmd.none
+              )
+
+        "sharedModel/roundNumber" ->
+          case D.decodeValue D.int outsideInfo.data of
+            Err _ -> (model, Cmd.none)
+            Ok n ->
+              ( {model | roundNumber = n}
+              , Cmd.none
+              )
+
+        "sharedModel/roundPlaying" ->
+          case D.decodeValue D.bool outsideInfo.data of
+            Err _ -> (model, Cmd.none)
+            Ok b ->
+              ( {model | roundPlaying = b}
+              , Cmd.none
+              )
+
+        _ -> (model,Cmd.none)
 
 stringView : List String -> List (Html Msg)
 stringView xs =
@@ -346,15 +409,6 @@ view model =
 --View all player information
     , applyHtmlDiv (List.map applyHtmlDiv (List.map viewPlayerInfo model.players))
 
-
-----------------------FIREBASE TEST DELETE
-    , case model.count of
-        Just n ->
-          Html.text <|
-            "The worldwide count is " ++ String.fromInt n ++ "."
-
-        Nothing ->
-          Html.text "Loading worldwide count..."
 
 -- Whiteboard
 
