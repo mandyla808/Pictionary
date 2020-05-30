@@ -80,7 +80,7 @@ type alias Model =
   , color : Color
   , size : Float
   , currentScreen : Int
-
+  , username : Int
   }
 
 --FLAGS

@@ -131,6 +131,25 @@ drawSegments model =
                                          [ Canvas.rect ( 1, 1 ) 748.0 748.0 ]]
        , currentScreen = model.currentScreen + 1 }
 
+receiveTracer : List (Float) -> Model -> Model
+receiveTracer l model =
+    case l of
+      x1 :: y1 :: x2 :: y2 :: z1 :: z2 :: n :: [] ->
+        let
+          p1 = (x1, y1)
+          p2 = (x2, y2)
+          t = { prevMidpoint = p1 , lastPoint = p2 }
+          p = (z1, z2)
+          newModel = (
+            if n < 2.0  -- same as n == 1.0
+              then addSegment p t model
+            else if n > 1.0 -- same as n == 2.0
+              then endSegment p t model
+            else { model | tracer = Just { prevMidpoint = p1 , lastPoint = p2 }})
+        in
+          newModel
+      _ ->  -- error
+        { model | tracer = Nothing }
 
 addSegment :  Canvas.Point -> Trace -> Model -> Model
 addSegment p t model =

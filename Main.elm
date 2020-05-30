@@ -26,6 +26,7 @@ import Canvas
 import Canvas.Settings
 import Canvas.Settings.Line as Line
 import Html.Events.Extra.Mouse as Mouse
+import Tuple exposing (first,second)
 
 import Element
 import Element.Input
@@ -86,6 +87,7 @@ initModel =
   , color = Color.black
   , size = 20.0
   , currentScreen = 0
+  , username = -1
   }
 
 --SUBSCRIPTIONS
@@ -104,16 +106,66 @@ update msg model =
     None ->
       (model, Cmd.none)
 
------------------------- ATTEMPTING FIRBASE UPDATES
-  {-  Outside infoForElm ->
-      case infoForElm of
-        BoardChanged l ->
-          ({model | drawnSegments = l } ,Cmd.none)-}
+    ReceiveValue outsideInfo ->
+      case outsideInfo.tag of
+        "sharedModel/tracer" ->
+          if model.username /= 1 then
+            case D.decodeValue (D.list D.float) outsideInfo.data of
+              Err _ -> (model, Cmd.none)
+              Ok l ->
+                ( (receiveTracer l model)
+                , Cmd.none
+                )
+          else (model, Cmd.none)
+        "sharedModel/roundTime" ->
+          case D.decodeValue D.int outsideInfo.data of
+            Err _ -> (model, Cmd.none)
+            Ok n ->
+              ( { model | roundTime = n}
+              , Cmd.none
+              )
+        "sharedModel/gameTime" ->
+          case D.decodeValue D.int outsideInfo.data of
+            Err _ -> (model, Cmd.none)
+            Ok n ->
+              ( {model | gameTime = n}
+              , Cmd.none
+              )
+        "sharedModel/restStart" ->
+          case D.decodeValue D.int outsideInfo.data of
+            Err _ -> (model, Cmd.none)
+            Ok n ->
+              ( {model | restStart = n}
+              , Cmd.none
+              )
+        "sharedModel/numPlayers" ->
+          case D.decodeValue D.int outsideInfo.data of
+            Err _ -> (model, Cmd.none)
+            Ok n ->
+              ( (if model.username == -1
+                  then {model | numPlayers = n, username = n}
+                  else {model | numPlayers = n})
+              , Cmd.none
+              )
+        "sharedModel/roundNumber" ->
+          case D.decodeValue D.int outsideInfo.data of
+            Err _ -> (model, Cmd.none)
+            Ok n ->
+              ( {model | roundNumber = n}
+              , Cmd.none
+              )
+        "sharedModel/roundPlaying" ->
+          case D.decodeValue D.bool outsideInfo.data of
+            Err _ -> (model, Cmd.none)
+            Ok b ->
+              ( {model | roundPlaying = b}
+              , Cmd.none
+              )
+        _ -> (model,Cmd.none)
 
     NextScreen float ->
       (drawSegments model , Cmd.none)
-  --    (drawSegments model , sendInfoOutside Draw)
----------------------------------------------------
+
     Tick t ->
       let
         --Returns true if any player is still guessing
@@ -164,9 +216,6 @@ update msg model =
           ({model | players = (updatePlayer model.players updatedPlayer)}
           ,Cmd.none)
 
---    NextScreen float ->
---      (drawSegments model , Cmd.none)
-
     Guess player guess ->
       (playerGuessUpdate model player guess, Cmd.none)
 
@@ -216,79 +265,56 @@ update msg model =
         ])
 
     BeginDraw point ->
-      ({model | tracer = Just {prevMidpoint = point , lastPoint = point} }
-      , Cmd.none)
+      let
+        newModel = {model | tracer = Just {prevMidpoint = point , lastPoint = point} }
+      in
+        (newModel, (sendTracer 0.0 point model))
     ContDraw point ->
       case model.tracer of
         Just x ->
-          ((addSegment point x model) , Cmd.none)
+          let
+            newModel = addSegment point x model
+          in
+            (newModel, (sendTracer 1.0 point model))
         Nothing ->
           (model, Cmd.none)
     EndDraw point ->
       case model.tracer of
         Just x ->
-          ((endSegment point x model) , Cmd.none)
+          let
+            newModel = endSegment point x model
+          in
+            (newModel, (sendTracer 2.0 point model))
         Nothing ->
           (model, Cmd.none)
+
     ChangeColor c ->
       ( {model | color = c} , Cmd.none)
     ChangeSize f ->
       ( {model | size = f} , Cmd.none)
 
 
-    ReceiveValue outsideInfo ->
-
-      case outsideInfo.tag of
-
-        "sharedModel/roundTime" ->
-          case D.decodeValue D.int outsideInfo.data of
-            Err _ -> (model, Cmd.none)
-            Ok n ->
-              ( { model | roundTime = n}
-              , Cmd.none
-              )
-
-        "sharedModel/gameTime" ->
-          case D.decodeValue D.int outsideInfo.data of
-            Err _ -> (model, Cmd.none)
-            Ok n ->
-              ( {model | gameTime = n}
-              , Cmd.none
-              )
-
-        "sharedModel/restStart" ->
-          case D.decodeValue D.int outsideInfo.data of
-            Err _ -> (model, Cmd.none)
-            Ok n ->
-              ( {model | restStart = n}
-              , Cmd.none
-              )
-
-        "sharedModel/numPlayers" ->
-          case D.decodeValue D.int outsideInfo.data of
-            Err _ -> (model, Cmd.none)
-            Ok n ->
-              ( {model | numPlayers = n}
-              , Cmd.none
-              )
-
-        "sharedModel/roundNumber" ->
-          case D.decodeValue D.int outsideInfo.data of
-            Err _ -> (model, Cmd.none)
-            Ok n ->
-              ( {model | roundNumber = n}
-              , Cmd.none
-              )
-
-        "sharedModel/roundPlaying" ->
-          case D.decodeValue D.bool outsideInfo.data of
-            Err _ -> (model, Cmd.none)
-            Ok b ->
-              ( {model | roundPlaying = b}
-              , Cmd.none
-              )
-
-        _ -> (model,Cmd.none)
+sendTracer : Float -> Canvas.Point -> Model -> Cmd Msg
+sendTracer n p model =
+  if model.username == 1
+    then
+      case model.tracer of
+        Nothing ->
+          Cmd.none
+        Just t ->
+          let
+            p1 = t.prevMidpoint
+            p2 = t.lastPoint
+            x1 = first p1
+            y1 = second p1
+            x2 = first p2
+            y2 = second p2
+            z1 = first p
+            z2 = second p
+            ps = [x1, y1, x2, y2, z1, z2, n]
+          in
+            infoForJS {tag = "sharedModel/tracer", data = (E.list E.float ps)}
+  else Cmd.none
 
 stringView : List String -> List (Html Msg)
 stringView xs =
@@ -299,7 +325,6 @@ stringView xs =
 --Takes a list of Html objects and puts them in an Html div
 applyHtmlDiv : List (Html Msg) -> Html Msg
 applyHtmlDiv xs = Html.div [] xs
-
 
 --Views all info on a player
 viewPlayerInfo : Player -> List (Html Msg)
@@ -413,10 +438,12 @@ view model =
 -- Whiteboard
 
     , Canvas.toHtml (750, 750)
-        [ Mouse.onDown (.offsetPos >> BeginDraw)
-        , Mouse.onMove (.offsetPos >> ContDraw)
-        , Mouse.onUp (.offsetPos >> EndDraw)
-        ]
+        (if model.username == 1
+          then [ Mouse.onUp (.offsetPos >> EndDraw)
+               , Mouse.onDown (.offsetPos >> BeginDraw)
+               , Mouse.onMove (.offsetPos >> ContDraw)
+               ]
+         else [])
         ( ( Canvas.shapes [ Canvas.Settings.stroke Color.blue ] [ Canvas.rect ( 0, 0 ) 750 750 ]) ::
           model.drawnSegments )
     , Html.div
@@ -461,6 +488,7 @@ view model =
     , Element.layout []
         (Element.Input.slider
           [ Element.height (Element.px 5)
+          , Element.width (Element.px 700)
           , Element.behindContent
             (Element.el
               [ Element.width (Element.px 700)
