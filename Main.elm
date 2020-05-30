@@ -94,7 +94,7 @@ initModel =
 subscriptions : Model -> Sub Msg
 subscriptions model =
   Sub.batch
-  [ Time.every 2000 Tick
+  [ Time.every 1000 Tick
   , Browser.Events.onAnimationFrameDelta NextScreen
   , infoForElm ReceiveValue
   ]
@@ -159,6 +159,20 @@ update msg model =
             Err _ -> (model, Cmd.none)
             Ok b ->
               ( {model | roundPlaying = b}
+              , Cmd.none
+              )
+        "sharedModel/color" ->
+          case D.decodeValue D.int outsideInfo.data of
+            Err _ -> (model, Cmd.none)
+            Ok n ->
+              ( {model | color = receiveColor n}
+              , Cmd.none
+              )
+        "sharedModel/size" ->
+          case D.decodeValue D.float outsideInfo.data of
+            Err _ -> (model, Cmd.none)
+            Ok f ->
+              ( {model | size = f}
               , Cmd.none
               )
         _ -> (model,Cmd.none)
@@ -240,6 +254,8 @@ update msg model =
             infoForJS {tag = "sharedModel/roundTime", data = E.int 0}
           , infoForJS {tag = "sharedModel/roundPlaying", data = E.bool False}
           , infoForJS {tag = "sharedModel/restStart" , data = E.int model.gameTime}
+          , infoForJS {tag = "sharedModel/color", data = E.int 0}
+          , infoForJS {tag = "sharedModel/size", data = E.float 20.0}
          ])
 
     NewWord (newWord, words) ->
@@ -315,6 +331,43 @@ sendTracer n p model =
           in
             infoForJS {tag = "sharedModel/tracer", data = (E.list E.float ps)}
   else Cmd.none
+
+sendColor: Color -> Cmd Msg
+sendColor color =
+  let
+    red = Color.toCssString Color.red
+    orange = Color.toCssString Color.orange
+    yellow = Color.toCssString Color.yellow
+    green = Color.toCssString Color.green
+    blue = Color.toCssString Color.blue
+    purple = Color.toCssString Color.purple
+    brown = Color.toCssString Color.brown
+    eraser = Color.toCssString Color.white
+    want = Color.toCssString color
+    n = (
+      if want == red then 1
+      else if want == orange then 2
+      else if want == yellow then 3
+      else if want == green then 4
+      else if want == blue then 5
+      else if want == purple then 6
+      else if want == brown then 7
+      else if want == eraser then 8
+      else 0 )
+    in
+      infoForJS {tag = "sharedModel/color", data = (E.int n)}
+
+receiveColor: Int -> Color
+receiveColor n =
+  if n == 1 then Color.red
+  else if n == 2 then Color.orange
+  else if n == 3 then Color.yellow
+  else if n == 4 then Color.green
+  else if n == 5 then Color.blue
+  else if n == 6 then Color.purple
+  else if n == 7 then Color.brown
+  else if n == 8 then Color.white
+  else Color.black
 
 stringView : List String -> List (Html Msg)
 stringView xs =
@@ -439,9 +492,9 @@ view model =
 
     , Canvas.toHtml (750, 750)
         (if model.username == 1
-          then [ Mouse.onUp (.offsetPos >> EndDraw)
-               , Mouse.onDown (.offsetPos >> BeginDraw)
+          then [ Mouse.onDown (.offsetPos >> BeginDraw)
                , Mouse.onMove (.offsetPos >> ContDraw)
+               , Mouse.onUp (.offsetPos >> EndDraw)
                ]
          else [])
         ( ( Canvas.shapes [ Canvas.Settings.stroke Color.blue ] [ Canvas.rect ( 0, 0 ) 750 750 ]) ::

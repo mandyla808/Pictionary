@@ -39,3 +39,11 @@ firebase.database().ref("sharedModel/roundPlaying").on("value", function(snapsho
 firebase.database().ref("sharedModel/tracer").on("value", function(snapshot) {
   app.ports.infoForElm.send({"tag": "sharedModel/tracer", "data": snapshot.val()})
 })
+
+firebase.database().ref("sharedModel/color").on("value", function(snapshot) {
+  app.ports.infoForElm.send({"tag": "sharedModel/color", "data": snapshot.val()})
+})
+
+firebase.database().ref("sharedModel/size").on("value", function(snapshot) {
+  app.ports.infoForElm.send({"tag": "sharedModel/size", "data": snapshot.val()})
+})
