@@ -305,9 +305,10 @@ update msg model =
           (model, Cmd.none)
 
     ChangeColor c ->
-      ( {model | color = c} , Cmd.none)
+      ( {model | color = c} , (sendColor c))
     ChangeSize f ->
-      ( {model | size = f} , Cmd.none)
+      ( {model | size = f}
+      , infoForJS {tag = "sharedModel/size", data = E.float f})
 
 
 sendTracer : Float -> Canvas.Point -> Model -> Cmd Msg
