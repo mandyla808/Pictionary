@@ -118,6 +118,18 @@ startRoundUpdate model =
          , tracer = Nothing
        }
 
+--Given a list of players and a username, returns the player if their username is in the list
+findPlayer : Int -> List Player -> Maybe Player
+findPlayer username players =
+  case players of
+    [] -> Nothing
+    p :: ps ->
+      if p.username == username then
+        Just p
+      else
+        findPlayer username ps
+
+
 --After every tick, draw the segments
 --set segments to empty array
 drawSegments : Model -> Model

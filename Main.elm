@@ -56,6 +56,7 @@ init : Flags -> (Model, Cmd Msg)
 init () =
   (initModel, Cmd.none)
 
+
 initPlayer : Int -> Player
 initPlayer n =
   { name = ""
@@ -71,7 +72,7 @@ initPlayer n =
 initModel : Model
 initModel =
   { players = []
-  , numPlayers = 0
+  , numPlayers = -1
   , currentWord = Nothing
   , unusedWords = wordList
   , currentDrawer = Nothing
@@ -272,8 +273,8 @@ update msg model =
 --        players = model.players ++ [(initPlayer model.numPlayers)]
               }
         , Cmd.batch[
-            infoForJS {tag = "sharedModel/numPlayers", data = E.int (model.numPlayers + 1)}
-          , infoForJS {tag = "players/", data = E.list encodePlayer (model.players ++ [(initPlayer model.numPlayers)])}
+           infoForJS {tag = "players/", data = E.list encodePlayer (model.players ++ [(initPlayer model.numPlayers)])}
+         , infoForJS {tag = "sharedModel/numPlayers", data = E.int (model.numPlayers + 1)}
           ])
 
     UpdateName player newName ->
@@ -304,27 +305,31 @@ update msg model =
 
     RoundOver ->
       (  let
-          playerRoundReset : Player -> Player
-          playerRoundReset p = {p | isGuessing = False, isDrawing = False, isCorrect = False}
           newModel = drawSegments model
         in
           {newModel | currentWord = Nothing,
                    currentDrawer = Nothing,
-                   players = List.map playerRoundReset model.players,
+          --         players = List.map playerRoundReset model.players,
                    segments = Array.empty,
                    drawnSegments = [],
                    tracer = Nothing,
                    color = Color.black,
                    size = 20.0
                   }
-          , Cmd.batch [
-            infoForJS {tag = "sharedModel/roundTime", data = E.int 0}
-          , infoForJS {tag = "sharedModel/roundPlaying", data = E.bool False}
-          , infoForJS {tag = "sharedModel/restStart" , data = E.int model.gameTime}
-          , infoForJS {tag = "sharedModel/color", data = E.int 0}
-          , infoForJS {tag = "sharedModel/size", data = E.float 20.0}
-          , infoForJS {tag = "sharedModel/currentWord", data = E.string "NOWORD"}
-         ])
+          ,
+          let
+            playerRoundReset : Player -> Player
+            playerRoundReset p = {p | isGuessing = False, isDrawing = False, isCorrect = False}
+          in
+            Cmd.batch [
+              infoForJS {tag = "sharedModel/roundTime", data = E.int 0}
+            , infoForJS {tag = "sharedModel/roundPlaying", data = E.bool False}
+            , infoForJS {tag = "sharedModel/restStart" , data = E.int model.gameTime}
+            , infoForJS {tag = "sharedModel/color", data = E.int 0}
+            , infoForJS {tag = "sharedModel/size", data = E.float 20.0}
+            , infoForJS {tag = "sharedModel/currentWord", data = E.string "NOWORD"}
+            , infoForJS {tag = "players", data = E.list encodePlayer (List.map playerRoundReset model.players)}
+           ])
 
     NewWord (newWord, words) ->
       ({model | unusedWords = words
@@ -390,7 +395,7 @@ update msg model =
 
 
     FreshGame ->
-      (model,
+      (initModel,
       Cmd.batch[
         infoForJS {tag = "sharedModel/roundTime", data = E.int 60}
       , infoForJS {tag = "sharedModel/roundNumber", data = E.int 0}
@@ -399,6 +404,7 @@ update msg model =
       , infoForJS {tag = "sharedModel/gameTime", data = E.int 0}
       , infoForJS {tag = "sharedModel/restStart", data = E.int 0}
       , infoForJS {tag = "sharedModel/currentWord" ,data = E.string "NOWORD"}
+      , infoForJS {tag = "players/" , data = E.list encodePlayer  []}
       ])
 
 encodePlayer : Player -> E.Value
@@ -425,9 +431,6 @@ decodePlayer =
     (D.field "isDrawing" D.bool)
     (D.field "isNamed" D.bool)
     (D.field "isCorrect" D.bool)
-
-
-
 
 sendTracer : Float -> Canvas.Point -> Model -> Cmd Msg
 sendTracer n p model =
@@ -549,7 +552,7 @@ view model =
       []
       [Html.button [onClick FreshGame] [Html.text "CLICK TO START THE GAME FRESH"]]
 
-    ,
+{-    ,
       let
         printPlayers : List Player -> String
         printPlayers ps =
@@ -567,6 +570,7 @@ view model =
         Html.div
         []
         (giveNameBoxes model.players)
+
 
 -- Submit player names
     ,  let
@@ -599,6 +603,9 @@ view model =
       in
         giveGuessBoxes model.players)
 
+
+
+
 -- Allows players to submit guesses
     ,  let
         giveGuessButton : List Player -> List (Html Msg)
@@ -615,6 +622,43 @@ view model =
         in
           Html.div []
             (giveGuessButton model.players)
+        -}
+
+--  ALLOWS INDIVIDUAL PLAYERS TO TYPE IN GUESSES
+    , case findPlayer model.username model.players of
+        Nothing -> Html.div [] []
+        Just p ->
+
+          let
+            nameInput : List (Html Msg)
+            nameInput =
+              if not p.isNamed then
+                [Html.button [onClick (SubmitName p)]
+                    [Html.text ("Enter your name!")]
+                , Html.input [placeholder ("Enter Name"), value p.name, onInput (UpdateName p)] []
+                ]
+              else
+                [Html.div [] []]
+
+            guessInput : List (Html Msg)
+            guessInput =
+              if p.isGuessing then
+                  [Html.button [onClick (Guess p p.currentGuess)]
+                    [Html.text ("Submit guess player" ++ String.fromInt(p.username))]
+
+                , Html.input [placeholder ("Insert guess for " ++ String.fromInt (p.username)),
+                              value p.currentGuess, onInput (UpdateCurrentGuess p)] []
+                  ]
+              else
+                [Html.div [] [Html.text "nice job ur correct!!"]]
+
+          in
+            Html.div
+            []
+            (nameInput ++ guessInput)
+
+
+
 
 --View all player information
     , applyHtmlDiv (List.map applyHtmlDiv (List.map viewPlayerInfo model.players))
