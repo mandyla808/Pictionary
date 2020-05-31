@@ -37,13 +37,11 @@ playerGuessUpdate model player guess =
     Just cw ->
       let
         foo = 5
-      --  updatedGuesses =  guess :: player.guesses
       in
         if guess == cw then
           let
             updatedPlayer =
               {player |  score = (player.score + 1)
-        --               , guesses = updatedGuesses
                        , isGuessing = False
                        , currentGuess = ""
                        , isCorrect = True
@@ -53,7 +51,6 @@ playerGuessUpdate model player guess =
         else
           let
             updatedPlayer = {player | currentGuess = ""
-                                  --  , guesses = updatedGuesses
                                     }
           in
             {model | players = (updatePlayer model.players updatedPlayer)}
@@ -67,7 +64,6 @@ roundOverUpdate model =
   let
     playerRoundReset : Player -> Player
     playerRoundReset p = {p | isGuessing = False, isDrawing = False, isCorrect = False}
-  --  playerRoundReset p = {p | isGuessing = False, isDrawing = False, isCorrect = False, guesses = []}
 
     newModel = drawSegments model
   in

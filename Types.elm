@@ -21,7 +21,6 @@ type alias Player =
   , username : Int
   , currentGuess : String
   , score : Int
---  , guesses : List String
   , isGuessing : Bool
   , isDrawing : Bool
   , isNamed : Bool
@@ -58,7 +57,7 @@ type Msg
 
   --Firebase
   | ReceiveValue GenericOutsideData
-  | FreshGame 
+  | FreshGame
 
 
 --  | Outside

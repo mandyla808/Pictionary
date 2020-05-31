@@ -62,7 +62,6 @@ initPlayer n =
   , username = n
   , score = 0
   , currentGuess = ""
-  --, guesses = []
   , isGuessing = False
   , isDrawing = False
   , isNamed = False
@@ -305,8 +304,6 @@ update msg model =
       (  let
           playerRoundReset : Player -> Player
           playerRoundReset p = {p | isGuessing = False, isDrawing = False, isCorrect = False}
-      --    playerRoundReset p = {p | isGuessing = False, isDrawing = False, isCorrect = False, guesses = []}
-
           newModel = drawSegments model
         in
           {newModel | currentWord = Nothing,
@@ -409,7 +406,6 @@ encodePlayer p =
     , ("username", E.int p.username)
     , ("currentGuess", E.string p.currentGuess)
     , ("score", E.int p.score)
-  --  , ("guesses", E.list E.string p.guesses)
     , ("isGuessing", E.bool p.isGuessing)
     , ("isDrawing", E.bool p.isDrawing)
     , ("isNamed", E.bool p.isNamed)
@@ -423,11 +419,13 @@ decodePlayer =
     (D.field "username" D.int)
     (D.field "currentGuess" D.string)
     (D.field "score" D.int)
-  --  (D.field "guesses" (D.list D.string))
     (D.field "isGuessing" D.bool)
     (D.field "isDrawing" D.bool)
     (D.field "isNamed" D.bool)
     (D.field "isCorrect" D.bool)
+
+
+
 
 sendTracer : Float -> Canvas.Point -> Model -> Cmd Msg
 sendTracer n p model =
@@ -508,7 +506,6 @@ viewPlayerInfo p =
     , [Html.text("Score: " ++ String.fromInt p.score)]
     , if p.isDrawing then [Html.text(p.name ++ " is drawing!")]
       else [Html.text("")]]
-  --  , stringView p.guesses]
 
 --VIEW
 view : Model -> Html Msg
