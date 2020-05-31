@@ -16,13 +16,12 @@ import Json.Encode as E
 ----------------------------------------------------------------------
 
 type alias Score = Int
-type alias Name = String
 type alias Player =
-  { name : Name
-  , identity : Int
+  { name : String
+  , username : Int
   , currentGuess : String
   , score : Int
-  , guesses : List String
+--  , guesses : List String
   , isGuessing : Bool
   , isDrawing : Bool
   , isNamed : Bool
@@ -48,6 +47,7 @@ type Msg
   | RoundOver
   | NewWord (Maybe String, List String)
   | NewDrawer (Maybe Player, List Player)
+  | NewHost (Maybe Int, List Int)
   | StartRound
   | BeginDraw Canvas.Point
   | ContDraw Canvas.Point
@@ -58,6 +58,7 @@ type Msg
 
   --Firebase
   | ReceiveValue GenericOutsideData
+  | FreshGame 
 
 
 --  | Outside
@@ -80,6 +81,7 @@ type alias Model =
   , color : Color
   , size : Float
   , currentScreen : Int
+
   , username : Int
   }
 

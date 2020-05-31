@@ -5232,9 +5232,12 @@ var $avh4$elm_color$Color$RgbaSpace = F4(
 		return {$: 'RgbaSpace', a: a, b: b, c: c, d: d};
 	});
 var $avh4$elm_color$Color$black = A4($avh4$elm_color$Color$RgbaSpace, 0 / 255, 0 / 255, 0 / 255, 1.0);
+var $elm$core$Basics$negate = function (n) {
+	return -n;
+};
 var $author$project$Words$wordList = _List_fromArray(
 	['Angel', 'Eyeball', 'Pizza', 'Fireworks', 'Pumpkin', 'Baby', 'Flower', 'Rainbow', 'Beard', 'Giraffe', 'Glasses', 'Snowflake', 'Book', 'Stairs', 'Starfish', 'Bee', 'Igloo', 'Strawberry', 'Butterfly', 'Ladybug', 'Sun', 'Camera', 'Lamp', 'Tire', 'Cat', 'Lion', 'Toast', 'Church', 'Mailbox', 'Toothbrush', 'Crayon', 'Dolphin', 'Nose', 'Truck', 'Egg', 'Peanut', 'Laptop', 'Headphones', 'Key', 'Table', 'Bread', 'Monkey', 'Coronavirus', 'Wallet', 'Door', 'Window', 'Cloud', 'Regenstein', 'Mansueto', 'cs223', 'Ryerson', 'Ratner', 'Bartlett', 'Dean Boyer', 'Max Palevsky', 'Phoenix', 'Harper', 'Dollar Milkshake', 'Coffee']);
-var $author$project$Main$initModel = {color: $avh4$elm_color$Color$black, currentDrawer: $elm$core$Maybe$Nothing, currentScreen: 0, currentWord: $elm$core$Maybe$Nothing, drawnSegments: _List_Nil, gameTime: 0, numPlayers: 0, players: _List_Nil, restStart: 0, roundNumber: 0, roundPlaying: false, roundTime: 60, segments: $elm$core$Array$empty, size: 20.0, tracer: $elm$core$Maybe$Nothing, unusedWords: $author$project$Words$wordList};
+var $author$project$Main$initModel = {color: $avh4$elm_color$Color$black, currentDrawer: $elm$core$Maybe$Nothing, currentScreen: 0, currentWord: $elm$core$Maybe$Nothing, drawnSegments: _List_Nil, gameTime: 0, numPlayers: 0, players: _List_Nil, restStart: 0, roundNumber: 0, roundPlaying: false, roundTime: 60, segments: $elm$core$Array$empty, size: 20.0, tracer: $elm$core$Maybe$Nothing, unusedWords: $author$project$Words$wordList, username: -1};
 var $elm$core$Platform$Cmd$batch = _Platform_batch;
 var $elm$core$Platform$Cmd$none = $elm$core$Platform$Cmd$batch(_List_Nil);
 var $author$project$Main$init = function (_v0) {
@@ -5809,13 +5812,16 @@ var $author$project$Main$subscriptions = function (model) {
 	return $elm$core$Platform$Sub$batch(
 		_List_fromArray(
 			[
-				A2($elm$time$Time$every, 2000, $author$project$Types$Tick),
+				A2($elm$time$Time$every, 1000, $author$project$Types$Tick),
 				$elm$browser$Browser$Events$onAnimationFrameDelta($author$project$Types$NextScreen),
 				$author$project$Main$infoForElm($author$project$Types$ReceiveValue)
 			]));
 };
 var $author$project$Types$NewDrawer = function (a) {
 	return {$: 'NewDrawer', a: a};
+};
+var $author$project$Types$NewHost = function (a) {
+	return {$: 'NewHost', a: a};
 };
 var $author$project$Types$NewWord = function (a) {
 	return {$: 'NewWord', a: a};
@@ -6248,9 +6254,6 @@ var $elm_community$random_extra$Random$List$get = F2(
 		return $elm$core$List$head(
 			A2($elm$core$List$drop, index, list));
 	});
-var $elm$core$Basics$negate = function (n) {
-	return -n;
-};
 var $elm$random$Random$Seed = F2(
 	function (a, b) {
 		return {$: 'Seed', a: a, b: b};
@@ -6470,6 +6473,23 @@ var $elm_community$random_extra$Random$List$choose = function (list) {
 			gen);
 	}
 };
+var $author$project$Types$Player = F8(
+	function (name, username, currentGuess, score, isGuessing, isDrawing, isNamed, isCorrect) {
+		return {currentGuess: currentGuess, isCorrect: isCorrect, isDrawing: isDrawing, isGuessing: isGuessing, isNamed: isNamed, name: name, score: score, username: username};
+	});
+var $elm$json$Json$Decode$int = _Json_decodeInt;
+var $elm$json$Json$Decode$map8 = _Json_map8;
+var $author$project$Main$decodePlayer = A9(
+	$elm$json$Json$Decode$map8,
+	$author$project$Types$Player,
+	A2($elm$json$Json$Decode$field, 'name', $elm$json$Json$Decode$string),
+	A2($elm$json$Json$Decode$field, 'username', $elm$json$Json$Decode$int),
+	A2($elm$json$Json$Decode$field, 'currentGuess', $elm$json$Json$Decode$string),
+	A2($elm$json$Json$Decode$field, 'score', $elm$json$Json$Decode$int),
+	A2($elm$json$Json$Decode$field, 'isGuessing', $elm$json$Json$Decode$bool),
+	A2($elm$json$Json$Decode$field, 'isDrawing', $elm$json$Json$Decode$bool),
+	A2($elm$json$Json$Decode$field, 'isNamed', $elm$json$Json$Decode$bool),
+	A2($elm$json$Json$Decode$field, 'isCorrect', $elm$json$Json$Decode$bool));
 var $elm$json$Json$Decode$decodeValue = _Json_run;
 var $joakin$elm_canvas$Canvas$Settings$fill = function (color) {
 	return $joakin$elm_canvas$Canvas$Internal$Canvas$SettingDrawOp(
@@ -6514,6 +6534,37 @@ var $author$project$Updates$drawSegments = function (model) {
 				])
 		});
 };
+var $elm$json$Json$Encode$int = _Json_wrap;
+var $author$project$Main$encodePlayer = function (p) {
+	return $elm$json$Json$Encode$object(
+		_List_fromArray(
+			[
+				_Utils_Tuple2(
+				'name',
+				$elm$json$Json$Encode$string(p.name)),
+				_Utils_Tuple2(
+				'username',
+				$elm$json$Json$Encode$int(p.username)),
+				_Utils_Tuple2(
+				'currentGuess',
+				$elm$json$Json$Encode$string(p.currentGuess)),
+				_Utils_Tuple2(
+				'score',
+				$elm$json$Json$Encode$int(p.score)),
+				_Utils_Tuple2(
+				'isGuessing',
+				$elm$json$Json$Encode$bool(p.isGuessing)),
+				_Utils_Tuple2(
+				'isDrawing',
+				$elm$json$Json$Encode$bool(p.isDrawing)),
+				_Utils_Tuple2(
+				'isNamed',
+				$elm$json$Json$Encode$bool(p.isNamed)),
+				_Utils_Tuple2(
+				'isCorrect',
+				$elm$json$Json$Encode$bool(p.isCorrect))
+			]));
+};
 var $author$project$Updates$endSegment = F3(
 	function (p, t, model) {
 		return _Utils_update(
@@ -6544,6 +6595,7 @@ var $author$project$Updates$endSegment = F3(
 				tracer: $elm$core$Maybe$Nothing
 			});
 	});
+var $elm$json$Json$Decode$float = _Json_decodeFloat;
 var $elm$random$Random$Generate = function (a) {
 	return {$: 'Generate', a: a};
 };
@@ -6624,10 +6676,19 @@ var $author$project$Main$infoForJS = _Platform_outgoingPort(
 				]));
 	});
 var $author$project$Main$initPlayer = function (n) {
-	return {currentGuess: '', guesses: _List_Nil, identity: n, isCorrect: false, isDrawing: false, isGuessing: false, isNamed: false, name: '', score: 0};
+	return {currentGuess: '', isCorrect: false, isDrawing: false, isGuessing: false, isNamed: false, name: '', score: 0, username: n};
 };
-var $elm$json$Json$Decode$int = _Json_decodeInt;
-var $elm$json$Json$Encode$int = _Json_wrap;
+var $elm$json$Json$Decode$list = _Json_decodeList;
+var $elm$json$Json$Encode$list = F2(
+	function (func, entries) {
+		return _Json_wrap(
+			A3(
+				$elm$core$List$foldl,
+				_Json_addEntry(func),
+				_Json_emptyArray(_Utils_Tuple0),
+				entries));
+	});
+var $elm$core$Basics$neq = _Utils_notEqual;
 var $author$project$Updates$updatePlayer = F2(
 	function (players, player) {
 		if (!players.b) {
@@ -6635,7 +6696,7 @@ var $author$project$Updates$updatePlayer = F2(
 		} else {
 			var p = players.a;
 			var rest = players.b;
-			return _Utils_eq(p.identity, player.identity) ? A2($elm$core$List$cons, player, rest) : A2(
+			return _Utils_eq(p.username, player.username) ? A2($elm$core$List$cons, player, rest) : A2(
 				$elm$core$List$cons,
 				p,
 				A2($author$project$Updates$updatePlayer, rest, player));
@@ -6658,12 +6719,6 @@ var $author$project$Updates$newDrawerUpdate = F2(
 				});
 		}
 	});
-var $author$project$Updates$newWordUpdate = F3(
-	function (model, cw, ws) {
-		return _Utils_update(
-			model,
-			{currentWord: cw, unusedWords: ws});
-	});
 var $author$project$Updates$playerGuessUpdate = F3(
 	function (model, player, guess) {
 		var _v0 = model.currentWord;
@@ -6671,11 +6726,11 @@ var $author$project$Updates$playerGuessUpdate = F3(
 			return model;
 		} else {
 			var cw = _v0.a;
-			var updatedGuesses = A2($elm$core$List$cons, guess, player.guesses);
+			var foo = 5;
 			if (_Utils_eq(guess, cw)) {
 				var updatedPlayer = _Utils_update(
 					player,
-					{currentGuess: '', guesses: updatedGuesses, isCorrect: true, isGuessing: false, score: player.score + 1});
+					{currentGuess: '', isCorrect: true, isGuessing: false, score: player.score + 1});
 				return _Utils_update(
 					model,
 					{
@@ -6684,13 +6739,139 @@ var $author$project$Updates$playerGuessUpdate = F3(
 			} else {
 				var updatedPlayer = _Utils_update(
 					player,
-					{currentGuess: '', guesses: updatedGuesses});
+					{currentGuess: ''});
 				return _Utils_update(
 					model,
 					{
 						players: A2($author$project$Updates$updatePlayer, model.players, updatedPlayer)
 					});
 			}
+		}
+	});
+var $avh4$elm_color$Color$blue = A4($avh4$elm_color$Color$RgbaSpace, 52 / 255, 101 / 255, 164 / 255, 1.0);
+var $avh4$elm_color$Color$brown = A4($avh4$elm_color$Color$RgbaSpace, 193 / 255, 125 / 255, 17 / 255, 1.0);
+var $avh4$elm_color$Color$green = A4($avh4$elm_color$Color$RgbaSpace, 115 / 255, 210 / 255, 22 / 255, 1.0);
+var $avh4$elm_color$Color$orange = A4($avh4$elm_color$Color$RgbaSpace, 245 / 255, 121 / 255, 0 / 255, 1.0);
+var $avh4$elm_color$Color$purple = A4($avh4$elm_color$Color$RgbaSpace, 117 / 255, 80 / 255, 123 / 255, 1.0);
+var $avh4$elm_color$Color$red = A4($avh4$elm_color$Color$RgbaSpace, 204 / 255, 0 / 255, 0 / 255, 1.0);
+var $avh4$elm_color$Color$yellow = A4($avh4$elm_color$Color$RgbaSpace, 237 / 255, 212 / 255, 0 / 255, 1.0);
+var $author$project$Main$receiveColor = function (n) {
+	return (n === 1) ? $avh4$elm_color$Color$red : ((n === 2) ? $avh4$elm_color$Color$orange : ((n === 3) ? $avh4$elm_color$Color$yellow : ((n === 4) ? $avh4$elm_color$Color$green : ((n === 5) ? $avh4$elm_color$Color$blue : ((n === 6) ? $avh4$elm_color$Color$purple : ((n === 7) ? $avh4$elm_color$Color$brown : ((n === 8) ? $avh4$elm_color$Color$white : $avh4$elm_color$Color$black)))))));
+};
+var $author$project$Updates$receiveTracer = F2(
+	function (l, model) {
+		if (((((((l.b && l.b.b) && l.b.b.b) && l.b.b.b.b) && l.b.b.b.b.b) && l.b.b.b.b.b.b) && l.b.b.b.b.b.b.b) && (!l.b.b.b.b.b.b.b.b)) {
+			var x1 = l.a;
+			var _v1 = l.b;
+			var y1 = _v1.a;
+			var _v2 = _v1.b;
+			var x2 = _v2.a;
+			var _v3 = _v2.b;
+			var y2 = _v3.a;
+			var _v4 = _v3.b;
+			var z1 = _v4.a;
+			var _v5 = _v4.b;
+			var z2 = _v5.a;
+			var _v6 = _v5.b;
+			var n = _v6.a;
+			var p2 = _Utils_Tuple2(x2, y2);
+			var p1 = _Utils_Tuple2(x1, y1);
+			var t = {lastPoint: p2, prevMidpoint: p1};
+			var p = _Utils_Tuple2(z1, z2);
+			var newModel = (n < 2.0) ? A3($author$project$Updates$addSegment, p, t, model) : ((n > 1.0) ? A3($author$project$Updates$endSegment, p, t, model) : _Utils_update(
+				model,
+				{
+					tracer: $elm$core$Maybe$Just(
+						{lastPoint: p2, prevMidpoint: p1})
+				}));
+			return newModel;
+		} else {
+			return _Utils_update(
+				model,
+				{tracer: $elm$core$Maybe$Nothing});
+		}
+	});
+var $elm$core$String$concat = function (strings) {
+	return A2($elm$core$String$join, '', strings);
+};
+var $elm$core$String$fromFloat = _String_fromNumber;
+var $elm$core$Basics$round = _Basics_round;
+var $avh4$elm_color$Color$toCssString = function (_v0) {
+	var r = _v0.a;
+	var g = _v0.b;
+	var b = _v0.c;
+	var a = _v0.d;
+	var roundTo = function (x) {
+		return $elm$core$Basics$round(x * 1000) / 1000;
+	};
+	var pct = function (x) {
+		return $elm$core$Basics$round(x * 10000) / 100;
+	};
+	return $elm$core$String$concat(
+		_List_fromArray(
+			[
+				'rgba(',
+				$elm$core$String$fromFloat(
+				pct(r)),
+				'%,',
+				$elm$core$String$fromFloat(
+				pct(g)),
+				'%,',
+				$elm$core$String$fromFloat(
+				pct(b)),
+				'%,',
+				$elm$core$String$fromFloat(
+				roundTo(a)),
+				')'
+			]));
+};
+var $author$project$Main$sendColor = function (color) {
+	var yellow = $avh4$elm_color$Color$toCssString($avh4$elm_color$Color$yellow);
+	var want = $avh4$elm_color$Color$toCssString(color);
+	var red = $avh4$elm_color$Color$toCssString($avh4$elm_color$Color$red);
+	var purple = $avh4$elm_color$Color$toCssString($avh4$elm_color$Color$purple);
+	var orange = $avh4$elm_color$Color$toCssString($avh4$elm_color$Color$orange);
+	var green = $avh4$elm_color$Color$toCssString($avh4$elm_color$Color$green);
+	var eraser = $avh4$elm_color$Color$toCssString($avh4$elm_color$Color$white);
+	var brown = $avh4$elm_color$Color$toCssString($avh4$elm_color$Color$brown);
+	var blue = $avh4$elm_color$Color$toCssString($avh4$elm_color$Color$blue);
+	var n = _Utils_eq(want, red) ? 1 : (_Utils_eq(want, orange) ? 2 : (_Utils_eq(want, yellow) ? 3 : (_Utils_eq(want, green) ? 4 : (_Utils_eq(want, blue) ? 5 : (_Utils_eq(want, purple) ? 6 : (_Utils_eq(want, brown) ? 7 : (_Utils_eq(want, eraser) ? 8 : 0)))))));
+	return $author$project$Main$infoForJS(
+		{
+			data: $elm$json$Json$Encode$int(n),
+			tag: 'sharedModel/color'
+		});
+};
+var $elm$core$Tuple$second = function (_v0) {
+	var y = _v0.b;
+	return y;
+};
+var $author$project$Main$sendTracer = F3(
+	function (n, p, model) {
+		if (model.username === 1) {
+			var _v0 = model.tracer;
+			if (_v0.$ === 'Nothing') {
+				return $elm$core$Platform$Cmd$none;
+			} else {
+				var t = _v0.a;
+				var z2 = p.b;
+				var z1 = p.a;
+				var p2 = t.lastPoint;
+				var x2 = p2.a;
+				var y2 = p2.b;
+				var p1 = t.prevMidpoint;
+				var x1 = p1.a;
+				var y1 = p1.b;
+				var ps = _List_fromArray(
+					[x1, y1, x2, y2, z1, z2, n]);
+				return $author$project$Main$infoForJS(
+					{
+						data: A2($elm$json$Json$Encode$list, $elm$json$Json$Encode$float, ps),
+						tag: 'sharedModel/tracer'
+					});
+			}
+		} else {
+			return $elm$core$Platform$Cmd$none;
 		}
 	});
 var $tricycle$system_actor_model$System$Message$toCmd = A2(
@@ -6702,6 +6883,223 @@ var $author$project$Main$update = F2(
 		switch (msg.$) {
 			case 'None':
 				return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
+			case 'ReceiveValue':
+				var outsideInfo = msg.a;
+				var _v1 = outsideInfo.tag;
+				switch (_v1) {
+					case 'sharedModel/tracer':
+						if (model.username !== 1) {
+							var _v2 = A2(
+								$elm$json$Json$Decode$decodeValue,
+								$elm$json$Json$Decode$list($elm$json$Json$Decode$float),
+								outsideInfo.data);
+							if (_v2.$ === 'Err') {
+								return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
+							} else {
+								var l = _v2.a;
+								return _Utils_Tuple2(
+									A2($author$project$Updates$receiveTracer, l, model),
+									$elm$core$Platform$Cmd$none);
+							}
+						} else {
+							return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
+						}
+					case 'sharedModel/roundTime':
+						var _v3 = A2($elm$json$Json$Decode$decodeValue, $elm$json$Json$Decode$int, outsideInfo.data);
+						if (_v3.$ === 'Err') {
+							return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
+						} else {
+							var n = _v3.a;
+							return _Utils_Tuple2(
+								_Utils_update(
+									model,
+									{roundTime: n}),
+								$elm$core$Platform$Cmd$none);
+						}
+					case 'sharedModel/gameTime':
+						var _v4 = A2($elm$json$Json$Decode$decodeValue, $elm$json$Json$Decode$int, outsideInfo.data);
+						if (_v4.$ === 'Err') {
+							return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
+						} else {
+							var n = _v4.a;
+							return _Utils_Tuple2(
+								_Utils_update(
+									model,
+									{gameTime: n}),
+								$elm$core$Platform$Cmd$none);
+						}
+					case 'sharedModel/restStart':
+						var _v5 = A2($elm$json$Json$Decode$decodeValue, $elm$json$Json$Decode$int, outsideInfo.data);
+						if (_v5.$ === 'Err') {
+							return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
+						} else {
+							var n = _v5.a;
+							return _Utils_Tuple2(
+								_Utils_update(
+									model,
+									{restStart: n}),
+								$elm$core$Platform$Cmd$none);
+						}
+					case 'sharedModel/numPlayers':
+						var _v6 = A2($elm$json$Json$Decode$decodeValue, $elm$json$Json$Decode$int, outsideInfo.data);
+						if (_v6.$ === 'Err') {
+							return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
+						} else {
+							var n = _v6.a;
+							return _Utils_Tuple2(
+								_Utils_eq(model.username, -1) ? _Utils_update(
+									model,
+									{numPlayers: n, username: n}) : _Utils_update(
+									model,
+									{numPlayers: n}),
+								$elm$core$Platform$Cmd$none);
+						}
+					case 'sharedModel/roundNumber':
+						var _v7 = A2($elm$json$Json$Decode$decodeValue, $elm$json$Json$Decode$int, outsideInfo.data);
+						if (_v7.$ === 'Err') {
+							return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
+						} else {
+							var n = _v7.a;
+							return _Utils_Tuple2(
+								_Utils_update(
+									model,
+									{roundNumber: n}),
+								$elm$core$Platform$Cmd$none);
+						}
+					case 'sharedModel/roundPlaying':
+						var _v8 = A2($elm$json$Json$Decode$decodeValue, $elm$json$Json$Decode$bool, outsideInfo.data);
+						if (_v8.$ === 'Err') {
+							return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
+						} else {
+							var b = _v8.a;
+							return _Utils_Tuple2(
+								_Utils_update(
+									model,
+									{roundPlaying: b}),
+								$elm$core$Platform$Cmd$none);
+						}
+					case 'sharedModel/currentWord':
+						var _v9 = A2($elm$json$Json$Decode$decodeValue, $elm$json$Json$Decode$string, outsideInfo.data);
+						if (_v9.$ === 'Err') {
+							return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
+						} else {
+							var w = _v9.a;
+							if (w === 'NOWORD') {
+								return _Utils_Tuple2(
+									_Utils_update(
+										model,
+										{currentWord: $elm$core$Maybe$Nothing}),
+									$elm$core$Platform$Cmd$none);
+							} else {
+								return _Utils_Tuple2(
+									_Utils_update(
+										model,
+										{
+											currentWord: $elm$core$Maybe$Just(w)
+										}),
+									$elm$core$Platform$Cmd$none);
+							}
+						}
+					case 'sharedModel/unusedWords':
+						var _v11 = A2(
+							$elm$json$Json$Decode$decodeValue,
+							$elm$json$Json$Decode$list($elm$json$Json$Decode$string),
+							outsideInfo.data);
+						if (_v11.$ === 'Err') {
+							return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
+						} else {
+							var ws = _v11.a;
+							return _Utils_Tuple2(
+								_Utils_update(
+									model,
+									{unusedWords: ws}),
+								$elm$core$Platform$Cmd$none);
+						}
+					case 'sharedModel/color':
+						var _v12 = A2($elm$json$Json$Decode$decodeValue, $elm$json$Json$Decode$int, outsideInfo.data);
+						if (_v12.$ === 'Err') {
+							return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
+						} else {
+							var n = _v12.a;
+							return _Utils_Tuple2(
+								_Utils_update(
+									model,
+									{
+										color: $author$project$Main$receiveColor(n)
+									}),
+								$elm$core$Platform$Cmd$none);
+						}
+					case 'sharedModel/size':
+						var _v13 = A2($elm$json$Json$Decode$decodeValue, $elm$json$Json$Decode$float, outsideInfo.data);
+						if (_v13.$ === 'Err') {
+							return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
+						} else {
+							var f = _v13.a;
+							return _Utils_Tuple2(
+								_Utils_update(
+									model,
+									{size: f}),
+								$elm$core$Platform$Cmd$none);
+						}
+					case 'players/0':
+						var _v14 = A2($elm$json$Json$Decode$decodeValue, $author$project$Main$decodePlayer, outsideInfo.data);
+						if (_v14.$ === 'Err') {
+							return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
+						} else {
+							var f = _v14.a;
+							return _Utils_Tuple2(
+								_Utils_update(
+									model,
+									{
+										currentWord: $elm$core$Maybe$Just('SUCCESS0')
+									}),
+								$elm$core$Platform$Cmd$none);
+						}
+					case 'players/1':
+						var _v15 = A2($elm$json$Json$Decode$decodeValue, $author$project$Main$decodePlayer, outsideInfo.data);
+						if (_v15.$ === 'Err') {
+							return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
+						} else {
+							var f = _v15.a;
+							return _Utils_Tuple2(
+								_Utils_update(
+									model,
+									{
+										currentWord: $elm$core$Maybe$Just('SUCCESS1')
+									}),
+								$elm$core$Platform$Cmd$none);
+						}
+					case 'players/2':
+						var _v16 = A2($elm$json$Json$Decode$decodeValue, $author$project$Main$decodePlayer, outsideInfo.data);
+						if (_v16.$ === 'Err') {
+							return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
+						} else {
+							var f = _v16.a;
+							return _Utils_Tuple2(
+								_Utils_update(
+									model,
+									{
+										currentWord: $elm$core$Maybe$Just('SUCCESS2')
+									}),
+								$elm$core$Platform$Cmd$none);
+						}
+					case 'players/3':
+						var _v17 = A2($elm$json$Json$Decode$decodeValue, $author$project$Main$decodePlayer, outsideInfo.data);
+						if (_v17.$ === 'Err') {
+							return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
+						} else {
+							var f = _v17.a;
+							return _Utils_Tuple2(
+								_Utils_update(
+									model,
+									{
+										currentWord: $elm$core$Maybe$Just('SUCCESS3')
+									}),
+								$elm$core$Platform$Cmd$none);
+						}
+					default:
+						return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
+				}
 			case 'NextScreen':
 				var _float = msg.a;
 				return _Utils_Tuple2(
@@ -6733,6 +7131,16 @@ var $author$project$Main$update = F2(
 								{
 									data: $elm$json$Json$Encode$int(model.gameTime + 1),
 									tag: 'sharedModel/gameTime'
+								}),
+								$author$project$Main$infoForJS(
+								{
+									data: A2($elm$json$Json$Encode$list, $author$project$Main$encodePlayer, model.players),
+									tag: 'players'
+								}),
+								$author$project$Main$infoForJS(
+								{
+									data: $elm$json$Json$Encode$int(123),
+									tag: 'swingy'
 								})
 							])));
 			case 'NewPlayer':
@@ -6802,7 +7210,7 @@ var $author$project$Main$update = F2(
 						var playerRoundReset = function (p) {
 							return _Utils_update(
 								p,
-								{guesses: _List_Nil, isCorrect: false, isDrawing: false, isGuessing: false});
+								{isCorrect: false, isDrawing: false, isGuessing: false});
 						};
 						var newModel = $author$project$Updates$drawSegments(model);
 						return _Utils_update(
@@ -6835,21 +7243,66 @@ var $author$project$Main$update = F2(
 								{
 									data: $elm$json$Json$Encode$int(model.gameTime),
 									tag: 'sharedModel/restStart'
+								}),
+								$author$project$Main$infoForJS(
+								{
+									data: $elm$json$Json$Encode$int(0),
+									tag: 'sharedModel/color'
+								}),
+								$author$project$Main$infoForJS(
+								{
+									data: $elm$json$Json$Encode$float(20.0),
+									tag: 'sharedModel/size'
+								}),
+								$author$project$Main$infoForJS(
+								{
+									data: $elm$json$Json$Encode$string('NOWORD'),
+									tag: 'sharedModel/currentWord'
 								})
 							])));
 			case 'NewWord':
-				var _v2 = msg.a;
-				var newWord = _v2.a;
-				var words = _v2.b;
+				var _v19 = msg.a;
+				var newWord = _v19.a;
+				var words = _v19.b;
 				return _Utils_Tuple2(
-					A3($author$project$Updates$newWordUpdate, model, newWord, words),
-					$elm$core$Platform$Cmd$none);
+					_Utils_update(
+						model,
+						{unusedWords: words}),
+					$elm$core$Platform$Cmd$batch(
+						_List_fromArray(
+							[
+								$author$project$Main$infoForJS(
+								{
+									data: A2($elm$json$Json$Encode$list, $elm$json$Json$Encode$string, words),
+									tag: 'sharedModel/unusedWords'
+								}),
+								function () {
+								if (newWord.$ === 'Nothing') {
+									return $author$project$Main$infoForJS(
+										{
+											data: $elm$json$Json$Encode$string('NOWORD'),
+											tag: 'sharedModel/currentWord'
+										});
+								} else {
+									var nw = newWord.a;
+									return $author$project$Main$infoForJS(
+										{
+											data: $elm$json$Json$Encode$string(nw),
+											tag: 'sharedModel/currentWord'
+										});
+								}
+							}()
+							])));
 			case 'NewDrawer':
-				var _v3 = msg.a;
-				var drawer = _v3.a;
+				var _v21 = msg.a;
+				var drawer = _v21.a;
 				return _Utils_Tuple2(
 					A2($author$project$Updates$newDrawerUpdate, model, drawer),
 					$elm$core$Platform$Cmd$none);
+			case 'NewHost':
+				var _v22 = msg.a;
+				var newDrawerID = _v22.a;
+				return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
 			case 'StartRound':
 				return _Utils_Tuple2(
 					_Utils_update(
@@ -6871,6 +7324,11 @@ var $author$project$Main$update = F2(
 								$elm$random$Random$generate,
 								$author$project$Types$NewDrawer,
 								$elm_community$random_extra$Random$List$choose(model.players)),
+								A2(
+								$elm$random$Random$generate,
+								$author$project$Types$NewHost,
+								$elm_community$random_extra$Random$List$choose(
+									A2($elm$core$List$range, 1, model.numPlayers))),
 								$author$project$Main$infoForJS(
 								{
 									data: $elm$json$Json$Encode$int(60),
@@ -6889,33 +7347,36 @@ var $author$project$Main$update = F2(
 							])));
 			case 'BeginDraw':
 				var point = msg.a;
+				var newModel = _Utils_update(
+					model,
+					{
+						tracer: $elm$core$Maybe$Just(
+							{lastPoint: point, prevMidpoint: point})
+					});
 				return _Utils_Tuple2(
-					_Utils_update(
-						model,
-						{
-							tracer: $elm$core$Maybe$Just(
-								{lastPoint: point, prevMidpoint: point})
-						}),
-					$elm$core$Platform$Cmd$none);
+					newModel,
+					A3($author$project$Main$sendTracer, 0.0, point, model));
 			case 'ContDraw':
 				var point = msg.a;
-				var _v4 = model.tracer;
-				if (_v4.$ === 'Just') {
-					var x = _v4.a;
+				var _v23 = model.tracer;
+				if (_v23.$ === 'Just') {
+					var x = _v23.a;
+					var newModel = A3($author$project$Updates$addSegment, point, x, model);
 					return _Utils_Tuple2(
-						A3($author$project$Updates$addSegment, point, x, model),
-						$elm$core$Platform$Cmd$none);
+						newModel,
+						A3($author$project$Main$sendTracer, 1.0, point, model));
 				} else {
 					return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
 				}
 			case 'EndDraw':
 				var point = msg.a;
-				var _v5 = model.tracer;
-				if (_v5.$ === 'Just') {
-					var x = _v5.a;
+				var _v24 = model.tracer;
+				if (_v24.$ === 'Just') {
+					var x = _v24.a;
+					var newModel = A3($author$project$Updates$endSegment, point, x, model);
 					return _Utils_Tuple2(
-						A3($author$project$Updates$endSegment, point, x, model),
-						$elm$core$Platform$Cmd$none);
+						newModel,
+						A3($author$project$Main$sendTracer, 2.0, point, model));
 				} else {
 					return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
 				}
@@ -6925,93 +7386,60 @@ var $author$project$Main$update = F2(
 					_Utils_update(
 						model,
 						{color: c}),
-					$elm$core$Platform$Cmd$none);
+					$author$project$Main$sendColor(c));
 			case 'ChangeSize':
 				var f = msg.a;
 				return _Utils_Tuple2(
 					_Utils_update(
 						model,
 						{size: f}),
-					$elm$core$Platform$Cmd$none);
+					$author$project$Main$infoForJS(
+						{
+							data: $elm$json$Json$Encode$float(f),
+							tag: 'sharedModel/size'
+						}));
 			default:
-				var outsideInfo = msg.a;
-				var _v6 = outsideInfo.tag;
-				switch (_v6) {
-					case 'sharedModel/roundTime':
-						var _v7 = A2($elm$json$Json$Decode$decodeValue, $elm$json$Json$Decode$int, outsideInfo.data);
-						if (_v7.$ === 'Err') {
-							return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
-						} else {
-							var n = _v7.a;
-							return _Utils_Tuple2(
-								_Utils_update(
-									model,
-									{roundTime: n}),
-								$elm$core$Platform$Cmd$none);
-						}
-					case 'sharedModel/gameTime':
-						var _v8 = A2($elm$json$Json$Decode$decodeValue, $elm$json$Json$Decode$int, outsideInfo.data);
-						if (_v8.$ === 'Err') {
-							return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
-						} else {
-							var n = _v8.a;
-							return _Utils_Tuple2(
-								_Utils_update(
-									model,
-									{gameTime: n}),
-								$elm$core$Platform$Cmd$none);
-						}
-					case 'sharedModel/restStart':
-						var _v9 = A2($elm$json$Json$Decode$decodeValue, $elm$json$Json$Decode$int, outsideInfo.data);
-						if (_v9.$ === 'Err') {
-							return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
-						} else {
-							var n = _v9.a;
-							return _Utils_Tuple2(
-								_Utils_update(
-									model,
-									{restStart: n}),
-								$elm$core$Platform$Cmd$none);
-						}
-					case 'sharedModel/numPlayers':
-						var _v10 = A2($elm$json$Json$Decode$decodeValue, $elm$json$Json$Decode$int, outsideInfo.data);
-						if (_v10.$ === 'Err') {
-							return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
-						} else {
-							var n = _v10.a;
-							return _Utils_Tuple2(
-								_Utils_update(
-									model,
-									{numPlayers: n}),
-								$elm$core$Platform$Cmd$none);
-						}
-					case 'sharedModel/roundNumber':
-						var _v11 = A2($elm$json$Json$Decode$decodeValue, $elm$json$Json$Decode$int, outsideInfo.data);
-						if (_v11.$ === 'Err') {
-							return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
-						} else {
-							var n = _v11.a;
-							return _Utils_Tuple2(
-								_Utils_update(
-									model,
-									{roundNumber: n}),
-								$elm$core$Platform$Cmd$none);
-						}
-					case 'sharedModel/roundPlaying':
-						var _v12 = A2($elm$json$Json$Decode$decodeValue, $elm$json$Json$Decode$bool, outsideInfo.data);
-						if (_v12.$ === 'Err') {
-							return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
-						} else {
-							var b = _v12.a;
-							return _Utils_Tuple2(
-								_Utils_update(
-									model,
-									{roundPlaying: b}),
-								$elm$core$Platform$Cmd$none);
-						}
-					default:
-						return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
-				}
+				return _Utils_Tuple2(
+					model,
+					$elm$core$Platform$Cmd$batch(
+						_List_fromArray(
+							[
+								$author$project$Main$infoForJS(
+								{
+									data: $elm$json$Json$Encode$int(60),
+									tag: 'sharedModel/roundTime'
+								}),
+								$author$project$Main$infoForJS(
+								{
+									data: $elm$json$Json$Encode$int(0),
+									tag: 'sharedModel/roundNumber'
+								}),
+								$author$project$Main$infoForJS(
+								{
+									data: $elm$json$Json$Encode$bool(false),
+									tag: 'sharedModel/roundPlaying'
+								}),
+								$author$project$Main$infoForJS(
+								{
+									data: $elm$json$Json$Encode$int(0),
+									tag: 'sharedModel/numPlayers'
+								}),
+								$author$project$Main$infoForJS(
+								{
+									data: $elm$json$Json$Encode$int(0),
+									tag: 'sharedModel/gameTime'
+								}),
+								$author$project$Main$infoForJS(
+								{
+									data: $elm$json$Json$Encode$int(0),
+									tag: 'sharedModel/restStart'
+								}),
+								$author$project$Main$infoForJS(
+								{
+									data: $elm$json$Json$Encode$string('NOWORD'),
+									tag: 'sharedModel/currentWord'
+								})
+							])));
 		}
 	});
 var $author$project$Types$BeginDraw = function (a) {
@@ -7029,6 +7457,7 @@ var $author$project$Types$ContDraw = function (a) {
 var $author$project$Types$EndDraw = function (a) {
 	return {$: 'EndDraw', a: a};
 };
+var $author$project$Types$FreshGame = {$: 'FreshGame'};
 var $author$project$Types$Guess = F2(
 	function (a, b) {
 		return {$: 'Guess', a: a, b: b};
@@ -7066,8 +7495,6 @@ var $mdgriffith$elm_ui$Element$createNearby = F2(
 var $mdgriffith$elm_ui$Element$behindContent = function (element) {
 	return A2($mdgriffith$elm_ui$Element$createNearby, $mdgriffith$elm_ui$Internal$Model$Behind, element);
 };
-var $avh4$elm_color$Color$blue = A4($avh4$elm_color$Color$RgbaSpace, 52 / 255, 101 / 255, 164 / 255, 1.0);
-var $avh4$elm_color$Color$brown = A4($avh4$elm_color$Color$RgbaSpace, 193 / 255, 125 / 255, 17 / 255, 1.0);
 var $elm$html$Html$button = _VirtualDom_node('button');
 var $mdgriffith$elm_ui$Internal$Model$Colored = F3(
 	function (a, b, c) {
@@ -7087,7 +7514,6 @@ var $mdgriffith$elm_ui$Internal$Flag$flag = function (i) {
 	return (i > 31) ? $mdgriffith$elm_ui$Internal$Flag$Second(1 << (i - 32)) : $mdgriffith$elm_ui$Internal$Flag$Flag(1 << i);
 };
 var $mdgriffith$elm_ui$Internal$Flag$bgColor = $mdgriffith$elm_ui$Internal$Flag$flag(8);
-var $elm$core$Basics$round = _Basics_round;
 var $mdgriffith$elm_ui$Internal$Model$floatClass = function (x) {
 	return $elm$core$String$fromInt(
 		$elm$core$Basics$round(x * 255));
@@ -7337,10 +7763,6 @@ var $mdgriffith$elm_ui$Internal$Model$lengthClassName = function (x) {
 			return 'max' + ($elm$core$String$fromInt(max) + $mdgriffith$elm_ui$Internal$Model$lengthClassName(len));
 	}
 };
-var $elm$core$Tuple$second = function (_v0) {
-	var y = _v0.b;
-	return y;
-};
 var $mdgriffith$elm_ui$Internal$Model$transformClass = function (transform) {
 	switch (transform.$) {
 		case 'Untransformed':
@@ -7528,7 +7950,6 @@ var $elm$core$List$filterMap = F2(
 			_List_Nil,
 			xs);
 	});
-var $elm$core$String$fromFloat = _String_fromNumber;
 var $mdgriffith$elm_ui$Internal$Model$formatColor = function (_v0) {
 	var red = _v0.a;
 	var green = _v0.b;
@@ -9504,9 +9925,6 @@ var $mdgriffith$elm_ui$Internal$Style$sliderReset = '\ninput[type=range] {\n  -w
 var $mdgriffith$elm_ui$Internal$Style$thumbReset = '\ninput[type=range]::-webkit-slider-thumb {\n    -webkit-appearance: none;\n    opacity: 0.5;\n    width: 80px;\n    height: 80px;\n    background-color: black;\n    border:none;\n    border-radius: 5px;\n}\ninput[type=range]::-moz-range-thumb {\n    opacity: 0.5;\n    width: 80px;\n    height: 80px;\n    background-color: black;\n    border:none;\n    border-radius: 5px;\n}\ninput[type=range]::-ms-thumb {\n    opacity: 0.5;\n    width: 80px;\n    height: 80px;\n    background-color: black;\n    border:none;\n    border-radius: 5px;\n}\ninput[type=range][orient=vertical]{\n    writing-mode: bt-lr; /* IE */\n    -webkit-appearance: slider-vertical;  /* WebKit */\n}\n';
 var $mdgriffith$elm_ui$Internal$Style$trackReset = '\ninput[type=range]::-moz-range-track {\n    background: transparent;\n    cursor: pointer;\n}\ninput[type=range]::-ms-track {\n    background: transparent;\n    cursor: pointer;\n}\ninput[type=range]::-webkit-slider-runnable-track {\n    background: transparent;\n    cursor: pointer;\n}\n';
 var $mdgriffith$elm_ui$Internal$Style$overrides = '@media screen and (-ms-high-contrast: active), (-ms-high-contrast: none) {' + ($mdgriffith$elm_ui$Internal$Style$dot($mdgriffith$elm_ui$Internal$Style$classes.any) + ($mdgriffith$elm_ui$Internal$Style$dot($mdgriffith$elm_ui$Internal$Style$classes.row) + (' > ' + ($mdgriffith$elm_ui$Internal$Style$dot($mdgriffith$elm_ui$Internal$Style$classes.any) + (' { flex-basis: auto !important; } ' + ($mdgriffith$elm_ui$Internal$Style$dot($mdgriffith$elm_ui$Internal$Style$classes.any) + ($mdgriffith$elm_ui$Internal$Style$dot($mdgriffith$elm_ui$Internal$Style$classes.row) + (' > ' + ($mdgriffith$elm_ui$Internal$Style$dot($mdgriffith$elm_ui$Internal$Style$classes.any) + ($mdgriffith$elm_ui$Internal$Style$dot($mdgriffith$elm_ui$Internal$Style$classes.container) + (' { flex-basis: auto !important; }}' + ($mdgriffith$elm_ui$Internal$Style$inputTextReset + ($mdgriffith$elm_ui$Internal$Style$sliderReset + ($mdgriffith$elm_ui$Internal$Style$trackReset + ($mdgriffith$elm_ui$Internal$Style$thumbReset + $mdgriffith$elm_ui$Internal$Style$explainer)))))))))))))));
-var $elm$core$String$concat = function (strings) {
-	return A2($elm$core$String$join, '', strings);
-};
 var $mdgriffith$elm_ui$Internal$Style$Intermediate = function (a) {
 	return {$: 'Intermediate', a: a};
 };
@@ -9697,15 +10115,6 @@ var $mdgriffith$elm_ui$Internal$Model$staticRoot = function (opts) {
 				_List_Nil);
 	}
 };
-var $elm$json$Json$Encode$list = F2(
-	function (func, entries) {
-		return _Json_wrap(
-			A3(
-				$elm$core$List$foldl,
-				_Json_addEntry(func),
-				_Json_emptyArray(_Utils_Tuple0),
-				entries));
-	});
 var $elm$core$List$any = F2(
 	function (isOkay, list) {
 		any:
@@ -10483,7 +10892,6 @@ var $elm$core$List$minimum = function (list) {
 		return $elm$core$Maybe$Nothing;
 	}
 };
-var $elm$core$Basics$neq = _Utils_notEqual;
 var $mdgriffith$elm_ui$Internal$Model$convertAdjustment = function (adjustment) {
 	var lines = _List_fromArray(
 		[adjustment.capital, adjustment.baseline, adjustment.descender, adjustment.lowercase]);
@@ -12556,7 +12964,6 @@ var $mdgriffith$elm_ui$Element$el = F2(
 				_List_fromArray(
 					[child])));
 	});
-var $avh4$elm_color$Color$green = A4($avh4$elm_color$Color$RgbaSpace, 115 / 255, 210 / 255, 22 / 255, 1.0);
 var $elm$html$Html$input = _VirtualDom_node('input');
 var $mdgriffith$elm_ui$Element$Input$Above = {$: 'Above'};
 var $mdgriffith$elm_ui$Element$Input$Label = F3(
@@ -12888,7 +13295,6 @@ var $mpizenberg$elm_pointer_events$Html$Events$Extra$Mouse$buttonDecoder = A2(
 	$elm$json$Json$Decode$map,
 	$mpizenberg$elm_pointer_events$Html$Events$Extra$Mouse$buttonFromId,
 	A2($elm$json$Json$Decode$field, 'button', $elm$json$Json$Decode$int));
-var $elm$json$Json$Decode$float = _Json_decodeFloat;
 var $mpizenberg$elm_pointer_events$Internal$Decode$clientPos = A3(
 	$elm$json$Json$Decode$map2,
 	F2(
@@ -12984,10 +13390,7 @@ var $elm$html$Html$Events$onInput = function (tagger) {
 };
 var $mpizenberg$elm_pointer_events$Html$Events$Extra$Mouse$onMove = A2($mpizenberg$elm_pointer_events$Html$Events$Extra$Mouse$onWithOptions, 'mousemove', $mpizenberg$elm_pointer_events$Html$Events$Extra$Mouse$defaultOptions);
 var $mpizenberg$elm_pointer_events$Html$Events$Extra$Mouse$onUp = A2($mpizenberg$elm_pointer_events$Html$Events$Extra$Mouse$onWithOptions, 'mouseup', $mpizenberg$elm_pointer_events$Html$Events$Extra$Mouse$defaultOptions);
-var $avh4$elm_color$Color$orange = A4($avh4$elm_color$Color$RgbaSpace, 245 / 255, 121 / 255, 0 / 255, 1.0);
 var $elm$html$Html$Attributes$placeholder = $elm$html$Html$Attributes$stringProperty('placeholder');
-var $avh4$elm_color$Color$purple = A4($avh4$elm_color$Color$RgbaSpace, 117 / 255, 80 / 255, 123 / 255, 1.0);
-var $avh4$elm_color$Color$red = A4($avh4$elm_color$Color$RgbaSpace, 204 / 255, 0 / 255, 0 / 255, 1.0);
 var $mdgriffith$elm_ui$Element$rgb255 = F3(
 	function (red, green, blue) {
 		return A4($mdgriffith$elm_ui$Internal$Model$Rgba, red / 255, green / 255, blue / 255, 1);
@@ -13931,35 +14334,6 @@ var $joakin$elm_canvas$Canvas$Internal$CustomElementJsonApi$fill = function (fil
 				$joakin$elm_canvas$Canvas$Internal$CustomElementJsonApi$fillRuleToString(fillRule))
 			]));
 };
-var $avh4$elm_color$Color$toCssString = function (_v0) {
-	var r = _v0.a;
-	var g = _v0.b;
-	var b = _v0.c;
-	var a = _v0.d;
-	var roundTo = function (x) {
-		return $elm$core$Basics$round(x * 1000) / 1000;
-	};
-	var pct = function (x) {
-		return $elm$core$Basics$round(x * 10000) / 100;
-	};
-	return $elm$core$String$concat(
-		_List_fromArray(
-			[
-				'rgba(',
-				$elm$core$String$fromFloat(
-				pct(r)),
-				'%,',
-				$elm$core$String$fromFloat(
-				pct(g)),
-				'%,',
-				$elm$core$String$fromFloat(
-				pct(b)),
-				'%,',
-				$elm$core$String$fromFloat(
-				roundTo(a)),
-				')'
-			]));
-};
 var $joakin$elm_canvas$Canvas$Internal$CustomElementJsonApi$fillStyle = function (color) {
 	return A2(
 		$joakin$elm_canvas$Canvas$Internal$CustomElementJsonApi$field,
@@ -14294,18 +14668,6 @@ var $joakin$elm_canvas$Canvas$toHtml = F3(
 			attrs,
 			entities);
 	});
-var $author$project$Main$stringView = function (xs) {
-	if (!xs.b) {
-		return _List_Nil;
-	} else {
-		var x = xs.a;
-		var rest = xs.b;
-		return A2(
-			$elm$core$List$cons,
-			$elm$html$Html$text(x),
-			$author$project$Main$stringView(rest));
-	}
-};
 var $author$project$Main$viewPlayerInfo = function (p) {
 	return A2(
 		$elm$core$List$map,
@@ -14319,7 +14681,7 @@ var $author$project$Main$viewPlayerInfo = function (p) {
 				_List_fromArray(
 				[
 					$elm$html$Html$text(
-					'Player ID: ' + $elm$core$String$fromInt(p.identity))
+					'Player ID: ' + $elm$core$String$fromInt(p.username))
 				]),
 				_List_fromArray(
 				[
@@ -14336,17 +14698,23 @@ var $author$project$Main$viewPlayerInfo = function (p) {
 				]) : _List_fromArray(
 				[
 					$elm$html$Html$text('')
-				]),
-				$author$project$Main$stringView(p.guesses)
+				])
 			]));
 };
-var $avh4$elm_color$Color$yellow = A4($avh4$elm_color$Color$RgbaSpace, 237 / 255, 212 / 255, 0 / 255, 1.0);
 var $author$project$Main$view = function (model) {
 	return A2(
 		$elm$html$Html$div,
 		_List_Nil,
 		_List_fromArray(
 			[
+				A2(
+				$elm$html$Html$div,
+				_List_Nil,
+				_List_fromArray(
+					[
+						$elm$html$Html$text(
+						'Current username is: ' + $elm$core$String$fromInt(model.username))
+					])),
 				A2(
 				$elm$html$Html$div,
 				_List_Nil,
@@ -14413,6 +14781,22 @@ var $author$project$Main$view = function (model) {
 						_List_fromArray(
 							[
 								$elm$html$Html$text('Click to add player')
+							]))
+					])),
+				A2(
+				$elm$html$Html$div,
+				_List_Nil,
+				_List_fromArray(
+					[
+						A2(
+						$elm$html$Html$button,
+						_List_fromArray(
+							[
+								$elm$html$Html$Events$onClick($author$project$Types$FreshGame)
+							]),
+						_List_fromArray(
+							[
+								$elm$html$Html$text('CLICK TO START THE GAME FRESH')
 							]))
 					])),
 				function () {
@@ -14505,7 +14889,7 @@ var $author$project$Main$view = function (model) {
 									_List_fromArray(
 										[
 											$elm$html$Html$Attributes$placeholder(
-											'Guess for ' + $elm$core$String$fromInt(p.identity + 1)),
+											'Guess for ' + $elm$core$String$fromInt(p.username + 1)),
 											$elm$html$Html$Attributes$value(p.currentGuess),
 											$elm$html$Html$Events$onInput(
 											$author$project$Types$UpdateCurrentGuess(p))
@@ -14538,7 +14922,7 @@ var $author$project$Main$view = function (model) {
 										_List_fromArray(
 											[
 												$elm$html$Html$text(
-												'Submit guess player' + $elm$core$String$fromInt(p.identity + 1))
+												'Submit guess player' + $elm$core$String$fromInt(p.username + 1))
 											])),
 									giveGuessButton(rest));
 							} else {
@@ -14562,7 +14946,7 @@ var $author$project$Main$view = function (model) {
 				A3(
 				$joakin$elm_canvas$Canvas$toHtml,
 				_Utils_Tuple2(750, 750),
-				_List_fromArray(
+				(model.username === 1) ? _List_fromArray(
 					[
 						$mpizenberg$elm_pointer_events$Html$Events$Extra$Mouse$onDown(
 						A2(
@@ -14585,7 +14969,7 @@ var $author$project$Main$view = function (model) {
 								return $.offsetPos;
 							},
 							$author$project$Types$EndDraw))
-					]),
+					]) : _List_Nil,
 				A2(
 					$elm$core$List$cons,
 					A2(
@@ -14713,6 +15097,8 @@ var $author$project$Main$view = function (model) {
 						[
 							$mdgriffith$elm_ui$Element$height(
 							$mdgriffith$elm_ui$Element$px(5)),
+							$mdgriffith$elm_ui$Element$width(
+							$mdgriffith$elm_ui$Element$px(700)),
 							$mdgriffith$elm_ui$Element$behindContent(
 							A2(
 								$mdgriffith$elm_ui$Element$el,

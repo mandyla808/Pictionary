@@ -59,10 +59,10 @@ init () =
 initPlayer : Int -> Player
 initPlayer n =
   { name = ""
-  , identity = n
+  , username = n
   , score = 0
   , currentGuess = ""
-  , guesses = []
+  --, guesses = []
   , isGuessing = False
   , isDrawing = False
   , isNamed = False
@@ -87,6 +87,7 @@ initModel =
   , color = Color.black
   , size = 20.0
   , currentScreen = 0
+
   , username = -1
   }
 
@@ -117,6 +118,7 @@ update msg model =
                 , Cmd.none
                 )
           else (model, Cmd.none)
+
         "sharedModel/roundTime" ->
           case D.decodeValue D.int outsideInfo.data of
             Err _ -> (model, Cmd.none)
@@ -124,6 +126,7 @@ update msg model =
               ( { model | roundTime = n}
               , Cmd.none
               )
+
         "sharedModel/gameTime" ->
           case D.decodeValue D.int outsideInfo.data of
             Err _ -> (model, Cmd.none)
@@ -131,6 +134,7 @@ update msg model =
               ( {model | gameTime = n}
               , Cmd.none
               )
+
         "sharedModel/restStart" ->
           case D.decodeValue D.int outsideInfo.data of
             Err _ -> (model, Cmd.none)
@@ -138,6 +142,7 @@ update msg model =
               ( {model | restStart = n}
               , Cmd.none
               )
+
         "sharedModel/numPlayers" ->
           case D.decodeValue D.int outsideInfo.data of
             Err _ -> (model, Cmd.none)
@@ -147,6 +152,7 @@ update msg model =
                   else {model | numPlayers = n})
               , Cmd.none
               )
+
         "sharedModel/roundNumber" ->
           case D.decodeValue D.int outsideInfo.data of
             Err _ -> (model, Cmd.none)
@@ -154,6 +160,7 @@ update msg model =
               ( {model | roundNumber = n}
               , Cmd.none
               )
+
         "sharedModel/roundPlaying" ->
           case D.decodeValue D.bool outsideInfo.data of
             Err _ -> (model, Cmd.none)
@@ -161,6 +168,27 @@ update msg model =
               ( {model | roundPlaying = b}
               , Cmd.none
               )
+
+        "sharedModel/currentWord" ->
+          case D.decodeValue D.string outsideInfo.data of
+            Err _ -> (model, Cmd.none)
+            Ok w ->
+              case w of
+                "NOWORD" ->
+                  ( {model | currentWord = Nothing}
+                  , Cmd.none)
+                _ ->
+                  ( {model | currentWord = Just w}
+                  , Cmd.none)
+
+        "sharedModel/unusedWords" ->
+          case D.decodeValue (D.list D.string) outsideInfo.data of
+            Err _ -> (model, Cmd.none)
+            Ok ws ->
+              ( {model | unusedWords = ws}
+              , Cmd.none
+              )
+
         "sharedModel/color" ->
           case D.decodeValue D.int outsideInfo.data of
             Err _ -> (model, Cmd.none)
@@ -168,6 +196,7 @@ update msg model =
               ( {model | color = receiveColor n}
               , Cmd.none
               )
+
         "sharedModel/size" ->
           case D.decodeValue D.float outsideInfo.data of
             Err _ -> (model, Cmd.none)
@@ -175,7 +204,44 @@ update msg model =
               ( {model | size = f}
               , Cmd.none
               )
+
+
+        "players/0" ->
+          case D.decodeValue decodePlayer outsideInfo.data of
+            Err _ -> (model, Cmd.none)
+            Ok f ->
+              ( {model | currentWord = Just "SUCCESS0"}
+              , Cmd.none)
+
+
+
+        "players/1" ->
+          case D.decodeValue decodePlayer outsideInfo.data of
+            Err _ -> (model, Cmd.none)
+            Ok f ->
+              ( {model | currentWord = Just "SUCCESS1"}
+              , Cmd.none)
+
+
+
+        "players/2" ->
+          case D.decodeValue decodePlayer outsideInfo.data of
+            Err _ -> (model, Cmd.none)
+            Ok f ->
+              ( {model | currentWord = Just "SUCCESS2"}
+              , Cmd.none)
+
+
+
+        "players/3" ->
+          case D.decodeValue decodePlayer outsideInfo.data of
+            Err _ -> (model, Cmd.none)
+            Ok f ->
+              ( {model | currentWord = Just "SUCCESS3"}
+              , Cmd.none)
+
         _ -> (model,Cmd.none)
+
 
     NextScreen float ->
       (drawSegments model , Cmd.none)
@@ -198,6 +264,8 @@ update msg model =
 
             , infoForJS {tag = "sharedModel/roundTime", data = E.int (model.roundTime-1)}
             , infoForJS {tag = "sharedModel/gameTime", data = E.int (model.gameTime + 1)}
+            , infoForJS {tag = "players", data = E.list encodePlayer model.players}
+            , infoForJS {tag = "swingy", data = E.int 123}
             ])
 
     --Adds player when a button ("Click to join!") is hit
@@ -236,14 +304,14 @@ update msg model =
     RoundOver ->
       (  let
           playerRoundReset : Player -> Player
-          playerRoundReset p = {p | isGuessing = False, isDrawing = False, isCorrect = False, guesses = []}
+          playerRoundReset p = {p | isGuessing = False, isDrawing = False, isCorrect = False}
+      --    playerRoundReset p = {p | isGuessing = False, isDrawing = False, isCorrect = False, guesses = []}
+
           newModel = drawSegments model
         in
           {newModel | currentWord = Nothing,
                    currentDrawer = Nothing,
-        --           roundPlaying = False,
                    players = List.map playerRoundReset model.players,
-          --         restStart = model.gameTime,
                    segments = Array.empty,
                    drawnSegments = [],
                    tracer = Nothing,
@@ -256,18 +324,28 @@ update msg model =
           , infoForJS {tag = "sharedModel/restStart" , data = E.int model.gameTime}
           , infoForJS {tag = "sharedModel/color", data = E.int 0}
           , infoForJS {tag = "sharedModel/size", data = E.float 20.0}
+          , infoForJS {tag = "sharedModel/currentWord", data = E.string "NOWORD"}
          ])
 
     NewWord (newWord, words) ->
-      (newWordUpdate model newWord words, Cmd.none)
+      ({model | unusedWords = words
+              }
+          , Cmd.batch [
+            infoForJS {tag = "sharedModel/unusedWords", data=E.list E.string words}
+          , case newWord of
+              Nothing -> infoForJS {tag = "sharedModel/currentWord", data=E.string "NOWORD"}
+              Just nw -> infoForJS {tag = "sharedModel/currentWord", data=E.string nw}
+          ])
 
     NewDrawer (drawer, _) ->
       (newDrawerUpdate model drawer, Cmd.none)
 
+    NewHost (newDrawerID, _) ->
+      (model, Cmd.none)
+
     StartRound ->
-      ({model | --roundNumber = model.roundNumber + 1
-              -- , roundPlaying = True
-                players = List.map allowGuess model.players
+      ({model |
+                 players = List.map allowGuess model.players
                , segments = Array.empty
                , drawnSegments = []
                , tracer = Nothing
@@ -275,6 +353,7 @@ update msg model =
         , Cmd.batch[
           Random.generate NewWord (Random.List.choose model.unusedWords)
         , Random.generate NewDrawer (Random.List.choose model.players)
+        , Random.generate NewHost (Random.List.choose (List.range 1 model.numPlayers))
         , infoForJS {tag = "sharedModel/roundTime", data = E.int 60}
         , infoForJS {tag = "sharedModel/roundNumber", data = E.int (model.roundNumber + 1)}
         , infoForJS {tag = "sharedModel/roundPlaying", data = E.bool True}
@@ -310,6 +389,45 @@ update msg model =
       ( {model | size = f}
       , infoForJS {tag = "sharedModel/size", data = E.float f})
 
+
+    FreshGame ->
+      (model,
+      Cmd.batch[
+        infoForJS {tag = "sharedModel/roundTime", data = E.int 60}
+      , infoForJS {tag = "sharedModel/roundNumber", data = E.int 0}
+      , infoForJS {tag = "sharedModel/roundPlaying", data = E.bool False}
+      , infoForJS {tag = "sharedModel/numPlayers", data = E.int 0}
+      , infoForJS {tag = "sharedModel/gameTime", data = E.int 0}
+      , infoForJS {tag = "sharedModel/restStart", data = E.int 0}
+      , infoForJS {tag = "sharedModel/currentWord" ,data = E.string "NOWORD"}
+      ])
+
+encodePlayer : Player -> E.Value
+encodePlayer p =
+  E.object
+    [ ("name", E.string p.name)
+    , ("username", E.int p.username)
+    , ("currentGuess", E.string p.currentGuess)
+    , ("score", E.int p.score)
+  --  , ("guesses", E.list E.string p.guesses)
+    , ("isGuessing", E.bool p.isGuessing)
+    , ("isDrawing", E.bool p.isDrawing)
+    , ("isNamed", E.bool p.isNamed)
+    , ("isCorrect", E.bool p.isCorrect)]
+
+decodePlayer : D.Decoder Player
+decodePlayer =
+  D.map8
+    Player
+    (D.field "name" D.string)
+    (D.field "username" D.int)
+    (D.field "currentGuess" D.string)
+    (D.field "score" D.int)
+  --  (D.field "guesses" (D.list D.string))
+    (D.field "isGuessing" D.bool)
+    (D.field "isDrawing" D.bool)
+    (D.field "isNamed" D.bool)
+    (D.field "isCorrect" D.bool)
 
 sendTracer : Float -> Canvas.Point -> Model -> Cmd Msg
 sendTracer n p model =
@@ -385,12 +503,12 @@ viewPlayerInfo : Player -> List (Html Msg)
 viewPlayerInfo p =
   List.map applyHtmlDiv
     [ [Html.text("Name: " ++ p.name)]
-    , [Html.text("Player ID: " ++ String.fromInt p.identity)]
+    , [Html.text("Player ID: " ++ String.fromInt p.username)]
     , [Html.text("Current Guess: " ++ p.currentGuess)]
     , [Html.text("Score: " ++ String.fromInt p.score)]
     , if p.isDrawing then [Html.text(p.name ++ " is drawing!")]
-      else [Html.text("")]
-    , stringView p.guesses]
+      else [Html.text("")]]
+  --  , stringView p.guesses]
 
 --VIEW
 view : Model -> Html Msg
@@ -398,6 +516,10 @@ view model =
   Html.div
     []
     [ Html.div
+      []
+      [Html.text ("Current username is: " ++ String.fromInt model.username)]
+
+    , Html.div
       []
       [Html.text ("Timer:" ++ String.fromInt model.roundTime)]
 
@@ -418,6 +540,11 @@ view model =
     , Html.div
       []
       [Html.button [onClick NewPlayer] [Html.text "Click to add player"]]
+
+    , Html.div
+      []
+      [Html.button [onClick FreshGame] [Html.text "CLICK TO START THE GAME FRESH"]]
+
     ,
       let
         printPlayers : List Player -> String
@@ -463,7 +590,7 @@ view model =
           case players of
             [] -> []
             p :: rest ->
-              (Html.input [placeholder ("Guess for " ++ String.fromInt (p.identity+1)),
+              (Html.input [placeholder ("Guess for " ++ String.fromInt (p.username)),
                             value p.currentGuess, onInput (UpdateCurrentGuess p)] []) :: giveGuessBoxes rest
       in
         giveGuessBoxes model.players)
@@ -477,7 +604,7 @@ view model =
             p :: rest ->
               if p.isGuessing then
                 (Html.button [onClick (Guess p p.currentGuess)]
-                [Html.text ("Submit guess player" ++ String.fromInt(p.identity +1))])
+                [Html.text ("Submit guess player" ++ String.fromInt(p.username +1))])
                   :: giveGuessButton rest
               else
                 giveGuessButton rest

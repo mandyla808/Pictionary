@@ -21,7 +21,7 @@ updatePlayer players player =
   case players of
     [] -> []
     p :: rest ->
-      if p.identity == player.identity then
+      if p.username == player.username then
         player :: rest
       else
         p :: (updatePlayer rest player)
@@ -36,13 +36,14 @@ playerGuessUpdate model player guess =
     Nothing -> model
     Just cw ->
       let
-        updatedGuesses =  guess :: player.guesses
+        foo = 5
+      --  updatedGuesses =  guess :: player.guesses
       in
         if guess == cw then
           let
             updatedPlayer =
               {player |  score = (player.score + 1)
-                       , guesses = updatedGuesses
+        --               , guesses = updatedGuesses
                        , isGuessing = False
                        , currentGuess = ""
                        , isCorrect = True
@@ -51,8 +52,9 @@ playerGuessUpdate model player guess =
             {model | players = (updatePlayer model.players updatedPlayer) }
         else
           let
-            updatedPlayer = {player | guesses = updatedGuesses
-                                    , currentGuess = ""}
+            updatedPlayer = {player | currentGuess = ""
+                                  --  , guesses = updatedGuesses
+                                    }
           in
             {model | players = (updatePlayer model.players updatedPlayer)}
 
@@ -64,7 +66,9 @@ roundOverUpdate: Model -> Model
 roundOverUpdate model =
   let
     playerRoundReset : Player -> Player
-    playerRoundReset p = {p | isGuessing = False, isDrawing = False, isCorrect = False, guesses = []}
+    playerRoundReset p = {p | isGuessing = False, isDrawing = False, isCorrect = False}
+  --  playerRoundReset p = {p | isGuessing = False, isDrawing = False, isCorrect = False, guesses = []}
+
     newModel = drawSegments model
   in
     {newModel | currentWord = Nothing,
