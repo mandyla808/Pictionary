@@ -88,6 +88,7 @@ initModel =
   , currentScreen = 0
 
   , username = -1
+  , startedPlaying = False
   }
 
 --SUBSCRIPTIONS
@@ -204,15 +205,12 @@ update msg model =
               , Cmd.none
               )
 
-
         "players/0" ->
           case D.decodeValue decodePlayer outsideInfo.data of
             Err _ -> (model, Cmd.none)
             Ok f ->
               ( {model | currentWord = Just "SUCCESS0"}
               , Cmd.none)
-
-
 
         "players/1" ->
           case D.decodeValue decodePlayer outsideInfo.data of
@@ -221,8 +219,6 @@ update msg model =
               ( {model | currentWord = Just "SUCCESS1"}
               , Cmd.none)
 
-
-
         "players/2" ->
           case D.decodeValue decodePlayer outsideInfo.data of
             Err _ -> (model, Cmd.none)
@@ -230,14 +226,18 @@ update msg model =
               ( {model | currentWord = Just "SUCCESS2"}
               , Cmd.none)
 
-
-
         "players/3" ->
           case D.decodeValue decodePlayer outsideInfo.data of
             Err _ -> (model, Cmd.none)
             Ok f ->
               ( {model | currentWord = Just "SUCCESS3"}
               , Cmd.none)
+
+        "players" ->
+          case D.decodeValue (D.list decodePlayer) outsideInfo.data of
+            Err _ -> (model, Cmd.none)
+            Ok ps -> ( {model | players = ps}, Cmd.none)
+
 
         _ -> (model,Cmd.none)
 
@@ -264,15 +264,17 @@ update msg model =
             , infoForJS {tag = "sharedModel/roundTime", data = E.int (model.roundTime-1)}
             , infoForJS {tag = "sharedModel/gameTime", data = E.int (model.gameTime + 1)}
             , infoForJS {tag = "players", data = E.list encodePlayer model.players}
-            , infoForJS {tag = "swingy", data = E.int 123}
             ])
 
     --Adds player when a button ("Click to join!") is hit
     NewPlayer ->
-      ({model | players = model.players ++ [(initPlayer model.numPlayers)]
+      ({model | startedPlaying = True
+--        players = model.players ++ [(initPlayer model.numPlayers)]
               }
-        , infoForJS {tag = "sharedModel/numPlayers", data = E.int (model.numPlayers + 1)}
-        )
+        , Cmd.batch[
+            infoForJS {tag = "sharedModel/numPlayers", data = E.int (model.numPlayers + 1)}
+          , infoForJS {tag = "players/", data = E.list encodePlayer (model.players ++ [(initPlayer model.numPlayers)])}
+          ])
 
     UpdateName player newName ->
       let
@@ -534,9 +536,14 @@ view model =
     , Html.text ("Game Time" ++ String.fromInt model.gameTime ++ "RestStart:" ++ String.fromInt model.restStart)]
 
 --  Manually add players
-    , Html.div
-      []
-      [Html.button [onClick NewPlayer] [Html.text "Click to add player"]]
+    , if not model.startedPlaying then
+        Html.div
+        []
+        [Html.button [onClick NewPlayer] [Html.text "Click to join!"]]
+      else
+        Html.div
+        []
+        []
 
     , Html.div
       []

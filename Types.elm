@@ -82,6 +82,7 @@ type alias Model =
   , currentScreen : Int
 
   , username : Int
+  , startedPlaying : Bool
   }
 
 --FLAGS

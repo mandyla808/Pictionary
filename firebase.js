@@ -71,3 +71,8 @@ firebase.database().ref("players/2").on("value", function(snapshot){
 firebase.database().ref("players/3").on("value", function(snapshot){
   app.ports.infoForElm.send({"tag": "players/3", "data": snapshot.val()})
 })
+
+firebase.database().ref("players/").on("value", function(snapshot){
+  console.log(snapshot.val())
+  app.ports.infoForElm.send({"tag": "players", "data": snapshot.val()})
+})
