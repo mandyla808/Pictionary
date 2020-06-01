@@ -19,10 +19,6 @@ firebase.database().ref("sharedModel/gameTime").on("value", function(snapshot) {
   app.ports.infoForElm.send({"tag" : "sharedModel/gameTime", "data" : snapshot.val()})
 })
 
-firebase.database().ref("sharedModel/restStart").on("value", function(snapshot) {
-  app.ports.infoForElm.send({"tag": "sharedModel/restStart", "data": snapshot.val()})
-})
-
 firebase.database().ref("sharedModel/roundNumber").on("value", function(snapshot) {
   app.ports.infoForElm.send({"tag": "sharedModel/roundNumber", "data": snapshot.val()})
 })
@@ -54,6 +50,10 @@ firebase.database().ref("sharedModel/color").on("value", function(snapshot) {
 
 firebase.database().ref("sharedModel/size").on("value", function(snapshot) {
   app.ports.infoForElm.send({"tag": "sharedModel/size", "data": snapshot.val()})
+})
+
+firebase.database().ref("sharedModel/drawerID").on("value", function(snapshot) {
+  app.ports.infoForElm.send({"tag": "sharedModel/drawerID", "data": snapshot.val()})
 })
 
 firebase.database().ref("players/0").on("value", function(snapshot){

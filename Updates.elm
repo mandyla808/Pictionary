@@ -8,14 +8,17 @@ import Types exposing (..)
 import Random exposing (Generator)
 import Random.List
 import Array
+import String
 import Canvas
 import Canvas.Settings.Line as Line
 import Canvas.Settings
 import Color
+
 --updatePlayer
 --Inputs: players player
 --Will search through the list of players
---If there is a player in the model's list with the same name, then they will be replaced with the input player field
+--If there is a player in the model's list with the same name,
+--then they will be replaced with the input player field
 updatePlayer : List Player -> Player -> List Player
 updatePlayer players player =
   case players of
@@ -29,57 +32,28 @@ updatePlayer players player =
 --playerUpdate
 --Inputs: model player guess
 --Updates the player's list of guesses
---Updates the score of the player if they are correct, and prevents them from guessing in the round again
+--Updates the score of the player if they are correct,
+--and prevents them from guessing in the round again
 playerGuessUpdate : Model -> Player -> String -> Model
 playerGuessUpdate model player guess =
   case model.currentWord of
     Nothing -> model
     Just cw ->
-      let
-        foo = 5
-      in
-        if guess == cw then
-          let
-            updatedPlayer =
-              {player |  score = (player.score + 1)
-                       , isGuessing = False
-                       , currentGuess = ""
-                       , isCorrect = True
-              }
-          in
-            {model | players = (updatePlayer model.players updatedPlayer) }
-        else
-          let
-            updatedPlayer = {player | currentGuess = ""
-                                    }
-          in
-            {model | players = (updatePlayer model.players updatedPlayer)}
-
---Updates the model when the round is over
---Makes all players unable to guess
---Stops the drawer from drawing
---Resets all the player's list of guesses
-roundOverUpdate: Model -> Model
-roundOverUpdate model =
-  let
-    playerRoundReset : Player -> Player
-    playerRoundReset p = {p | isGuessing = False, isDrawing = False, isCorrect = False}
-
-    newModel = drawSegments model
-  in
-    {newModel | currentWord = Nothing,
-             currentDrawer = Nothing,
-             roundPlaying = False,
-             players = List.map playerRoundReset model.players,
-             roundTime = 0,
-             restStart = model.gameTime,
-             segments = Array.empty,
-             drawnSegments = [],
-             tracer = Nothing,
-             color = Color.black,
-             size = 20.0
+      if (String.toUpper guess) == (String.toUpper cw) then
+        let
+          updatedPlayer =
+            {player |  score = (player.score + 1)
+                     , isGuessing = False
+                     , currentGuess = ""
+                     , isCorrect = True
             }
-
+        in
+          {model | players = (updatePlayer model.players updatedPlayer) }
+      else
+        let
+          updatedPlayer = {player | currentGuess = ""}
+        in
+          {model | players = (updatePlayer model.players updatedPlayer)}
 
 newWordUpdate : Model -> Maybe String -> List String -> Model
 newWordUpdate model cw ws =
@@ -94,7 +68,7 @@ newDrawerUpdate model player =
     Just p  ->
       let
         updatedPlayer = {p | isDrawing = True
-                            ,isCorrect = True}
+                           , isCorrect = True}
       in
         {model | currentDrawer = player
                , players = updatePlayer model.players updatedPlayer}
@@ -118,7 +92,8 @@ startRoundUpdate model =
          , tracer = Nothing
        }
 
---Given a list of players and a username, returns the player if their username is in the list
+--Given a list of players and a username,
+--returns the player if their username is in the list
 findPlayer : Int -> List Player -> Maybe Player
 findPlayer username players =
   case players of
@@ -129,6 +104,13 @@ findPlayer username players =
       else
         findPlayer username ps
 
+changeDrawer : Model -> Int
+changeDrawer model =
+  if model.username == model.drawerID
+    then
+      let x = modBy model.numPlayers (model.drawerID + 1) in
+        if x==0 then model.numPlayers else x
+  else model.drawerID
 
 --After every tick, draw the segments
 --set segments to empty array
@@ -157,7 +139,7 @@ receiveTracer l model =
               then addSegment p t model
             else if n > 1.0 -- same as n == 2.0
               then endSegment p t model
-            else { model | tracer = Just { prevMidpoint = p1 , lastPoint = p2 }})
+            else {model | tracer = Just {prevMidpoint = p1 , lastPoint = p2}})
         in
           newModel
       _ ->  -- error
