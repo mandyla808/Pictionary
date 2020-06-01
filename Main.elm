@@ -72,7 +72,7 @@ initPlayer n =
 initModel : Model
 initModel =
   { players = []
-  , numPlayers = -1
+  , numPlayers = 0
   , currentWord = Nothing
   , unusedWords = wordList
   , currentDrawer = Nothing
@@ -109,7 +109,7 @@ update msg model =
     ReceiveValue outsideInfo ->
       case outsideInfo.tag of
         "sharedModel/tracer" ->
-          if model.username /= 1 then
+          if model.username /= model.drawerID then
             case D.decodeValue (D.list D.float) outsideInfo.data of
               Err _ -> (model, Cmd.none)
               Ok l ->
@@ -267,7 +267,7 @@ update msg model =
               then
                 infoForJS {tag = "sharedModel/gameTime", data = E.int (model.gameTime + 1)}
               else Cmd.none)
-            , infoForJS {tag = "players", data = E.list encodePlayer model.players}
+  --        , infoForJS {tag = "players/", data = E.list encodePlayer model.players}
             ])
 
     --Adds player when a button ("Click to join!") is hit
@@ -356,8 +356,7 @@ update msg model =
       (model, Cmd.none)
 
     StartRound ->
-      ({ model | players = List.map allowGuess model.players
-              , segments = Array.empty
+      ({ model |segments = Array.empty
               , drawnSegments = []
               , tracer = Nothing
        }
@@ -367,6 +366,7 @@ update msg model =
               , infoForJS {tag = "sharedModel/roundTime", data = E.int 60}
               , infoForJS {tag = "sharedModel/roundNumber", data = E.int (model.roundNumber + 1)}
               , infoForJS {tag = "sharedModel/roundPlaying", data = E.bool True}
+              , infoForJS {tag = "players/", data = E.list encodePlayer (List.map allowGuess model.players)}
   --, Random.generate NewDrawer (Random.List.choose model.players)
   --, Random.generate NewHost (Random.List.choose (List.range 1 model.numPlayers))
               ]
@@ -449,7 +449,7 @@ decodePlayer =
 
 sendTracer : Float -> Canvas.Point -> Model -> Cmd Msg
 sendTracer n p model =
-  if model.username == 1
+  if model.username == model.drawerID
     then
       case model.tracer of
         Nothing ->

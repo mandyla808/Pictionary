@@ -73,7 +73,7 @@ type alias Model =
   , roundTime : Int
   , gameTime : Int
   , roundPlaying : Bool
-  , restStart : Int
+--  , restStart : Int
   , segments : Array Renderable
   , drawnSegments : List Renderable
   , tracer : Maybe Trace
