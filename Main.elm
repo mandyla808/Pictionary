@@ -649,14 +649,14 @@ view model =
         Html.div [] []
 
 -- Whiteboard
-    , Canvas.toHtml (400, 400)
+    , Canvas.toHtml (500, 500)
         (if model.username == model.drawerID
           then [ Mouse.onDown (.offsetPos >> BeginDraw)
                , Mouse.onMove (.offsetPos >> ContDraw)
                , Mouse.onUp (.offsetPos >> EndDraw)
                ]
          else [])
-        ( ( Canvas.shapes [ Canvas.Settings.stroke Color.blue ] [ Canvas.rect ( 0, 0 ) 400 400 ]) ::
+        ( ( Canvas.shapes [ Canvas.Settings.stroke Color.blue ] [ Canvas.rect ( 0, 0 ) 500 500 ]) ::
           model.drawnSegments )
     , Html.div
         []
@@ -701,10 +701,10 @@ view model =
     , Element.layout []
         (Element.Input.slider
           [ Element.height (Element.px 5)
-          , Element.width (Element.px 700)
+          , Element.width (Element.px 500)
           , Element.behindContent
             (Element.el
-              [ Element.width (Element.px 700)
+              [ Element.width (Element.px 500)
               , Element.height (Element.px 2)
               , Element.Background.color (Element.rgb255 0 0 0)
               , Element.Border.rounded 2
