@@ -448,7 +448,7 @@ decodePlayer =
 
 sendTracer : Float -> Canvas.Point -> Model -> Cmd Msg
 sendTracer n p model =
-  if model.username == model.drawerID
+  if model.username == model.drawerID && model.roundPlaying
     then
       case model.tracer of
         Nothing ->
