@@ -129,7 +129,7 @@ drawSegments model =
          , currentScreen = model.currentScreen + 1 }
   else { model
        | drawnSegments = [ Canvas.shapes [ Canvas.Settings.fill Color.white ]
-                                         [ Canvas.rect ( 1, 1 ) 748.0 748.0 ]]
+                                         [ Canvas.rect ( 1, 1 ) 498.0 498.0 ]]
        , currentScreen = model.currentScreen + 1 }
 
 receiveTracer : List (Float) -> Model -> Model
