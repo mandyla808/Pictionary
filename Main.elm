@@ -5,7 +5,7 @@ import Browser
 import Browser.Events
 import Html exposing (Html, div)
 import Html.Events exposing (onClick, onInput)
-import Html.Attributes exposing(placeholder, value, style)
+import Html.Attributes exposing(placeholder, value, style, class)
 import Debug
 import Random
 import Time exposing (Posix)
@@ -33,6 +33,8 @@ import Element.Input
 import Element.Background
 import Element.Border
 
+import String exposing (concat, fromInt)
+import List exposing (length)
 ----------------------------------------------------------------------
 -- Ports
 port infoForJS : GenericOutsideData -> Cmd msg
@@ -142,6 +144,14 @@ update msg model =
               , Cmd.none
               )
 
+        "sharedModel/drawerID" ->
+          case D.decodeValue D.int outsideInfo.data of
+            Err _ -> (model, Cmd.none)
+            Ok n ->
+              ( {model | drawerID = n}
+              , Cmd.none
+              )
+
         "sharedModel/roundNumber" ->
           case D.decodeValue D.int outsideInfo.data of
             Err _ -> (model, Cmd.none)
@@ -194,50 +204,14 @@ update msg model =
               , Cmd.none
               )
 
-        "sharedModel/drawerID" ->
-          case D.decodeValue D.int outsideInfo.data of
-            Err _ -> (model, Cmd.none)
-            Ok n ->
-              ( {model | drawerID = n}
-              , Cmd.none
-              )
-
-        "players/0" ->
-          case D.decodeValue decodePlayer outsideInfo.data of
-            Err _ -> (model, Cmd.none)
-            Ok f ->
-              ( model
-              --{model | currentWord = Just "SUCCESS0"}
-              , Cmd.none)
-
-        "players/1" ->
-          case D.decodeValue decodePlayer outsideInfo.data of
-            Err _ -> (model, Cmd.none)
-            Ok f ->
-              ( model
-              --{model | currentWord = Just "SUCCESS1"}
-              , Cmd.none)
-
-        "players/2" ->
-          case D.decodeValue decodePlayer outsideInfo.data of
-            Err _ -> (model, Cmd.none)
-            Ok f ->
-              ( model
-              --{model | currentWord = Just "SUCCESS2"}
-              , Cmd.none)
-
-        "players/3" ->
-          case D.decodeValue decodePlayer outsideInfo.data of
-            Err _ -> (model, Cmd.none)
-            Ok f ->
-              ( model
-              --{model | currentWord = Just "SUCCESS3"}
-              , Cmd.none)
-
         "players" ->
           case D.decodeValue (D.list decodePlayer) outsideInfo.data of
             Err _ -> (model, Cmd.none)
-            Ok ps -> ( {model | players = ps}, Cmd.none)
+            Ok ps ->
+              if (length ps < model.numPlayers) then
+                (model, Cmd.none)
+              else
+                ( {model | players = ps}, Cmd.none)
 
         _ -> (model,Cmd.none)
 
@@ -256,8 +230,10 @@ update msg model =
       in
         (model ,
           Cmd.batch
-            [(if model.roundTime == 1 then toCmd RoundOver
-              else if (not (stillGuessing model.players)) then toCmd RoundOver
+            [(if model.roundTime == 1
+                then toCmd RoundOver
+              else if (not (stillGuessing model.players) && model.startedPlaying)
+                then toCmd RoundOver
               else Cmd.none)
             , (if model.username == model.drawerID
               then
@@ -267,26 +243,28 @@ update msg model =
               then
                 infoForJS {tag = "sharedModel/gameTime", data = E.int (model.gameTime + 1)}
               else Cmd.none)
-  --        , infoForJS {tag = "players/", data = E.list encodePlayer model.players}
             ])
 
     --Adds player when a button ("Click to join!") is hit
     NewPlayer ->
-      ((if model.username == -1
-          then {model | startedPlaying = True, username = (model.numPlayers + 1)}
-          else {model | startedPlaying = True})
---        players = model.players ++ [(initPlayer model.numPlayers)]
+      (
+        {model | startedPlaying = True, username = (model.numPlayers + 1)
+               , players = model.players ++ [(initPlayer model.numPlayers)]}
+
         , Cmd.batch[
-            infoForJS {tag = "players/", data = E.list encodePlayer (model.players ++ [(initPlayer model.numPlayers)])}
+            infoForJS {tag = concat ["players/", fromInt model.numPlayers], data =  encodePlayer (initPlayer model.numPlayers)}
           , infoForJS {tag = "sharedModel/numPlayers", data = E.int (model.numPlayers + 1)}])
 
     UpdateName player newName ->
       let
         updatedPlayer = {player | name = newName}
+        updatedPlayers = updatePlayer model.players updatedPlayer
         newModel = {model | players = (updatePlayer model.players updatedPlayer)}
       in
-        ( model
-        , infoForJS {tag = "players/", data = E.list encodePlayer newModel.players})
+        (model
+       , infoForJS{tag = concat ["players/", fromInt (model.username - 1)], data = encodePlayer updatedPlayer}
+       )
+
 
     --Player submits their name
     SubmitName player ->
@@ -295,18 +273,41 @@ update msg model =
         newModel = {model | players = (updatePlayer model.players updatedPlayer)}
       in
         ( model
-        , infoForJS {tag = "players/", data = E.list encodePlayer newModel.players})
+        , infoForJS{tag = concat ["players/", fromInt (model.username - 1)], data = encodePlayer updatedPlayer}
+        )
 
     --Tracks what the player has in their text box
     UpdateCurrentGuess player guess ->
         let
           updatedPlayer = {player | currentGuess = guess}
         in
-          ({model | players = (updatePlayer model.players updatedPlayer)}
-          ,Cmd.none)
+          (model, infoForJS{tag = concat ["players/", fromInt (player.username - 1)], data = encodePlayer updatedPlayer})
 
     Guess player guess ->
-      (playerGuessUpdate model player guess, Cmd.none)
+      case model.currentWord of
+        Nothing -> (model, Cmd.none)
+
+        Just cw ->
+          if (String.toUpper guess) == (String.toUpper cw) then
+            let
+              updatedPlayer =
+                {player |  score = (player.score + 1)
+                         , isGuessing = False
+                         , currentGuess = ""
+                         , isCorrect = True
+                }
+            in
+              (model, infoForJS{tag = concat ["players/", fromInt (player.username - 1)], data = encodePlayer updatedPlayer})
+        --      (model, infoForJS {tag = "players/", data = E.list encodePlayer (updatePlayer model.players updatedPlayer)})
+
+          else
+            let
+              updatedPlayer = {player | currentGuess = ""}
+            in
+              (model, infoForJS{tag = concat ["players/", fromInt (player.username - 1)], data = encodePlayer updatedPlayer})
+
+            --  (model, infoForJS {tag = "players/", data = E.list encodePlayer (updatePlayer model.players updatedPlayer)})
+
 
     RoundOver ->
       ( let
@@ -319,7 +320,6 @@ update msg model =
                     , tracer = Nothing
                     , color = Color.black
                     , size = 20.0
-                    --, players = List.map playerRoundReset model.players
                     }
           ,
           let
@@ -367,8 +367,6 @@ update msg model =
               , infoForJS {tag = "sharedModel/roundNumber", data = E.int (model.roundNumber + 1)}
               , infoForJS {tag = "sharedModel/roundPlaying", data = E.bool True}
               , infoForJS {tag = "players/", data = E.list encodePlayer (List.map allowGuess model.players)}
-  --, Random.generate NewDrawer (Random.List.choose model.players)
-  --, Random.generate NewHost (Random.List.choose (List.range 1 model.numPlayers))
               ]
           else Cmd.none)
       )
@@ -419,6 +417,7 @@ update msg model =
       , infoForJS {tag = "players/" , data = E.list encodePlayer  []}
       , infoForJS {tag = "sharedModel/drawerID", data = E.int 1}
       , infoForJS {tag = "sharedModel/tracer", data = (E.list E.float [])}
+      , infoForJS {tag = "sharedModel/unusedWords", data = E.list E.string wordList}
       ])
 ----------------------END UPATE FUNCTION---------------------------------------
 
@@ -521,130 +520,85 @@ applyHtmlDiv xs = Html.div [] xs
 --Views all info on a player
 viewPlayerInfo : Player -> List (Html Msg)
 viewPlayerInfo p =
-  [ Html.div
-    []
-    [ Html.text ("Name: " ++ p.name
-        ++ " | Player ID: " ++ String.fromInt p.username
-        ++ " | Current Guess: " ++ p.currentGuess
-        ++ " | Score: " ++ String.fromInt p.score ++
-        (if p.isCorrect then " -- Correct!"
-         else ""))
+  let
+    playerName : String
+    playerName =
+      if p.isNamed then
+         p.name
+      else
+        "Player " ++ fromInt p.username
+  in
+    [ Html.div
+      []
+      [ Html.text (playerName
+          ++ " | Score: " ++ fromInt p.score ++
+          (if p.isCorrect then " -- Correct!"
+           else ""))
+      ]
     ]
-  ]
 
 --VIEW
 view : Model -> Html Msg
 view model =
   Html.div
     []
-    [ Html.div
-      []
-      [Html.text ("You are player number " ++ String.fromInt model.username)]
+    [
 
-    , Html.div []
-      ( if model.roundPlaying then
-          [Html.text ("Timer: " ++ String.fromInt model.roundTime)]
-        else [Html.text ("Waiting for Drawer to start round")])
+      if model.startedPlaying then
+        Html.div []
+        (if model.username == model.drawerID && not model.roundPlaying then
+          case findPlayer model.username model.players of
+            Nothing -> []
+            Just p ->
+              if p.isNamed then
+                [ Html.text ("You are the drawer! Click to start the round: ")
+                , Html.button [class "button", onClick StartRound][Html.text "Start Round"]
+                ]
+              else []
+        else if not model.roundPlaying then
+          case findPlayer model.username model.players of
+            Nothing -> []
+            Just p ->
+              if p.isNamed then
+                [Html.text ("You will be guessing! Waiting for round to start...")]
+              else
+                []
+        else [Html.div [] []])
+      else
+        Html.div [] []
 
-    , Html.div []
-        (if model.username == model.drawerID then
-          [Html.text ( "Game Time: " ++ String.fromInt model.gameTime ++
-              " | Round num: " ++ String.fromInt model.roundNumber ++ " | Current word: " ++
-            (case model.currentWord of
-              Nothing -> "No word"
-              Just w -> w))]
-         else [Html.text ("Game Time: " ++ String.fromInt model.gameTime ++
-            " | Round num: " ++ String.fromInt model.roundNumber)])
-    , Html.div []
-      (if model.username == model.drawerID then
-        [ Html.button [onClick StartRound][Html.text "Start Round:"]
-        , Html.button [onClick RoundOver][Html.text "End round"]]
-      else [Html.button [onClick RoundOver][Html.text "End round"]])
+    , if model.startedPlaying && model.roundNumber /= 0 then
+        Html.div [] [Html.text (" Round " ++ fromInt model.roundNumber)]
+      else
+        Html.div [] []
+
+
+    , if model.roundPlaying && model.startedPlaying then
+        Html.div [] [Html.text ("Timer: " ++ fromInt model.roundTime)]
+      else
+        Html.div [] []
+
+
+
+
+    , case model.currentWord of
+          Just w ->
+            if model.username == model.drawerID then
+              Html.div [] [Html.text("Draw: " ++ w)]
+            else
+              Html.div [] []
+          _ -> Html.div [] []
+
+
 --  Manually add players
     , if not model.startedPlaying then
         Html.div
         []
-        [Html.button [onClick NewPlayer] [Html.text "Click to join!"]]
+        [Html.button [class "button", onClick NewPlayer] [Html.text "Welcome! Click to join!"]]
       else
         Html.div
         []
         []
-
-    , Html.div
-      []
-      [Html.button [onClick FreshGame] [Html.text "Finish Game (reset firebase)"]]
-
-{-    ,
-      let
-        printPlayers : List Player -> String
-        printPlayers ps =
-          case ps of
-            [] -> ""
-            p::rest -> p.name ++ ", " ++ printPlayers rest
-        giveNameBoxes : List Player -> List (Html Msg)
-        giveNameBoxes players =
-          case players of
-            [] -> []
-            p :: rest ->
-              (Html.input [placeholder ("Enter Name"), value p.name, onInput (UpdateName p)] []) ::
-                giveNameBoxes rest
-      in
-        Html.div
-        []
-        (giveNameBoxes model.players)
-
-
--- Submit player names
-    ,  let
-        giveNameButton : List Player -> List (Html Msg)
-        giveNameButton players =
-          case players of
-            [] -> []
-            p :: rest ->
-              if not p.isNamed then
-                (Html.button [onClick (SubmitName p)]
-                [Html.text ("Enter Name!")])
-                  :: giveNameButton rest
-              else
-                giveNameButton rest
-        in
-          Html.div []
-            (giveNameButton model.players)
-
---  ALLOWS PLAYERS TO TYPE IN GUESSES
-    , Html.div
-      []
-      (let
-        giveGuessBoxes : List Player -> List (Html Msg)
-        giveGuessBoxes players =
-          case players of
-            [] -> []
-            p :: rest ->
-              (Html.input [placeholder ("Guess for " ++ String.fromInt (p.username)),
-                            value p.currentGuess, onInput (UpdateCurrentGuess p)] []) :: giveGuessBoxes rest
-      in
-        giveGuessBoxes model.players)
-
-
-
-
--- Allows players to submit guesses
-    ,  let
-        giveGuessButton : List Player -> List (Html Msg)
-        giveGuessButton players =
-          case players of
-            [] -> []
-            p :: rest ->
-              if p.isGuessing then
-                (Html.button [onClick (Guess p p.currentGuess)]
-                [Html.text ("Submit guess player" ++ String.fromInt(p.username +1))])
-                  :: giveGuessButton rest
-              else
-                giveGuessButton rest
-        in
-          Html.div []
-            (giveGuessButton model.players)
-        -}
 
 --  ALLOWS INDIVIDUAL PLAYERS TO TYPE IN GUESSES
     , case findPlayer model.username model.players of
@@ -654,20 +608,20 @@ view model =
             nameInput : List (Html Msg)
             nameInput =
               if not p.isNamed then
-                [ Html.button [onClick (SubmitName p)]
+                [ Html.input [class "input", placeholder ("Enter Name"), value p.name, onInput (UpdateName p)] []
+                , Html.button [class "button", onClick (SubmitName p)]
                     [Html.text ("Enter your name!")]
-                , Html.input [placeholder ("Enter Name"), value p.name, onInput (UpdateName p)] []
                 ]
               else
                 [Html.div [] []]
 
             guessInput : List (Html Msg)
             guessInput =
-              [ Html.button [onClick (Guess p p.currentGuess)]
-                  [Html.text ("Submit guess player" ++ String.fromInt(p.username))]
-              , Html.input
-                  [placeholder ("Insert guess for " ++ String.fromInt (p.username)),
+              [ Html.input
+                   [class "input", placeholder ("Insert guess for " ++ fromInt (p.username)),
                             value p.currentGuess, onInput (UpdateCurrentGuess p)] []
+             ,  Html.button [class "button", onClick (Guess p p.currentGuess)]
+                  [Html.text ("Submit guess player" ++ fromInt(p.username))]
               ]
           in
             Html.div
@@ -677,17 +631,32 @@ view model =
              else (nameInput ++ guessInput))
 
 --View all player information
-    , applyHtmlDiv (List.map applyHtmlDiv (List.map viewPlayerInfo model.players))
+    ,  if model.startedPlaying then
+        Html.div [class "playerheader"] [Html.text ("Scoreboard")]
+      else
+        Html.div [] []
+
+  ,    if model.startedPlaying then
+        applyHtmlDiv (List.map applyHtmlDiv (List.map viewPlayerInfo model.players))
+      else
+        Html.div [] []
+
+
+
+    ,  if model.startedPlaying then
+        Html.div [] [Html.button [class "button", onClick FreshGame] [Html.text "Finish Game"]]
+      else
+        Html.div [] []
 
 -- Whiteboard
-    , Canvas.toHtml (750, 750)
-        (if model.username == 1
+    , Canvas.toHtml (400, 400)
+        (if model.username == model.drawerID
           then [ Mouse.onDown (.offsetPos >> BeginDraw)
                , Mouse.onMove (.offsetPos >> ContDraw)
                , Mouse.onUp (.offsetPos >> EndDraw)
                ]
          else [])
-        ( ( Canvas.shapes [ Canvas.Settings.stroke Color.blue ] [ Canvas.rect ( 0, 0 ) 750 750 ]) ::
+        ( ( Canvas.shapes [ Canvas.Settings.stroke Color.blue ] [ Canvas.rect ( 0, 0 ) 400 400 ]) ::
           model.drawnSegments )
     , Html.div
         []

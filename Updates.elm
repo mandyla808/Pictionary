@@ -103,7 +103,7 @@ findPlayer username players =
         Just p
       else
         findPlayer username ps
-
+{-
 changeDrawer : Model -> Int
 changeDrawer model =
   if model.username == model.drawerID
@@ -111,6 +111,13 @@ changeDrawer model =
       let x = modBy model.numPlayers (model.drawerID + 1) in
         if x==0 then model.numPlayers else x
   else model.drawerID
+-}
+
+changeDrawer : Model -> Int
+changeDrawer model =
+  let x = modBy model.numPlayers (model.roundNumber + 1) in
+    if x == 0 then model.numPlayers else x
+
 
 --After every tick, draw the segments
 --set segments to empty array

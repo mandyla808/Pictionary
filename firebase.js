@@ -24,7 +24,6 @@ firebase.database().ref("sharedModel/roundNumber").on("value", function(snapshot
 })
 
 firebase.database().ref("sharedModel/numPlayers").on("value", function(snapshot) {
-  numPlayers = snapshot.val()
   app.ports.infoForElm.send({"tag": "sharedModel/numPlayers", "data": snapshot.val()})
 })
 
@@ -56,23 +55,6 @@ firebase.database().ref("sharedModel/drawerID").on("value", function(snapshot) {
   app.ports.infoForElm.send({"tag": "sharedModel/drawerID", "data": snapshot.val()})
 })
 
-firebase.database().ref("players/0").on("value", function(snapshot){
-  app.ports.infoForElm.send({"tag": "players/0", "data": snapshot.val()})
-})
-
-firebase.database().ref("players/1").on("value", function(snapshot){
-  app.ports.infoForElm.send({"tag": "players/1", "data": snapshot.val()})
-})
-
-firebase.database().ref("players/2").on("value", function(snapshot){
-  app.ports.infoForElm.send({"tag": "players/2", "data": snapshot.val()})
-})
-
-firebase.database().ref("players/3").on("value", function(snapshot){
-  app.ports.infoForElm.send({"tag": "players/3", "data": snapshot.val()})
-})
-
 firebase.database().ref("players/").on("value", function(snapshot){
-  console.log(snapshot.val())
   app.ports.infoForElm.send({"tag": "players", "data": snapshot.val()})
 })

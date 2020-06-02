@@ -5236,8 +5236,8 @@ var $elm$core$Basics$negate = function (n) {
 	return -n;
 };
 var $author$project$Words$wordList = _List_fromArray(
-	['Angel', 'Eyeball', 'Pizza', 'Fireworks', 'Pumpkin', 'Baby', 'Flower', 'Rainbow', 'Beard', 'Giraffe', 'Glasses', 'Snowflake', 'Book', 'Stairs', 'Starfish', 'Bee', 'Igloo', 'Strawberry', 'Butterfly', 'Ladybug', 'Sun', 'Camera', 'Lamp', 'Tire', 'Cat', 'Lion', 'Toast', 'Church', 'Mailbox', 'Toothbrush', 'Crayon', 'Dolphin', 'Nose', 'Truck', 'Egg', 'Peanut', 'Laptop', 'Headphones', 'Key', 'Table', 'Bread', 'Monkey', 'Coronavirus', 'Wallet', 'Door', 'Window', 'Cloud', 'Regenstein', 'Mansueto', 'cs223', 'Ryerson', 'Ratner', 'Bartlett', 'Dean Boyer', 'Max Palevsky', 'Phoenix', 'Harper', 'Dollar Milkshake', 'Coffee']);
-var $author$project$Main$initModel = {color: $avh4$elm_color$Color$black, currentDrawer: $elm$core$Maybe$Nothing, currentScreen: 0, currentWord: $elm$core$Maybe$Nothing, drawnSegments: _List_Nil, gameTime: 0, numPlayers: -1, players: _List_Nil, restStart: 0, roundNumber: 0, roundPlaying: false, roundTime: 60, segments: $elm$core$Array$empty, size: 20.0, startedPlaying: false, tracer: $elm$core$Maybe$Nothing, unusedWords: $author$project$Words$wordList, username: -1};
+	['Angel', 'Eyeball', 'Pizza', 'Fireworks', 'Pumpkin', 'Baby', 'Flower', 'Rainbow', 'Beard', 'Giraffe', 'Glasses', 'Snowflake', 'Book', 'Stairs', 'Starfish', 'Bee', 'Igloo', 'Strawberry', 'Butterfly', 'Ladybug', 'Sun', 'Camera', 'Lamp', 'Tire', 'Cat', 'Lion', 'Toast', 'Church', 'Mailbox', 'Toothbrush', 'Crayon', 'Dolphin', 'Nose', 'Truck', 'Egg', 'Peanut', 'Laptop', 'Headphones', 'Key', 'Table', 'Bread', 'Monkey', 'Coronavirus', 'Wallet', 'Door', 'Window', 'Cloud', 'Regenstein', 'Mansueto', 'cs223', 'Ryerson', 'Ratner', 'Bartlett', 'Dean Boyer', 'Max Palevsky', 'Phoenix', 'Harper', 'Dollar Milkshake', 'Coffee', 'Zoom']);
+var $author$project$Main$initModel = {color: $avh4$elm_color$Color$black, currentDrawer: $elm$core$Maybe$Nothing, currentScreen: 0, currentWord: $elm$core$Maybe$Nothing, drawerID: 1, drawnSegments: _List_Nil, gameTime: 0, numPlayers: 0, players: _List_Nil, roundNumber: 0, roundPlaying: false, roundTime: 60, segments: $elm$core$Array$empty, size: 20.0, startedPlaying: false, tracer: $elm$core$Maybe$Nothing, unusedWords: $author$project$Words$wordList, username: -1};
 var $elm$core$Platform$Cmd$batch = _Platform_batch;
 var $elm$core$Platform$Cmd$none = $elm$core$Platform$Cmd$batch(_List_Nil);
 var $author$project$Main$init = function (_v0) {
@@ -5817,17 +5817,10 @@ var $author$project$Main$subscriptions = function (model) {
 				$author$project$Main$infoForElm($author$project$Types$ReceiveValue)
 			]));
 };
-var $author$project$Types$NewDrawer = function (a) {
-	return {$: 'NewDrawer', a: a};
-};
-var $author$project$Types$NewHost = function (a) {
-	return {$: 'NewHost', a: a};
-};
 var $author$project$Types$NewWord = function (a) {
 	return {$: 'NewWord', a: a};
 };
 var $author$project$Types$RoundOver = {$: 'RoundOver'};
-var $author$project$Types$StartRound = {$: 'StartRound'};
 var $joakin$elm_canvas$Canvas$Settings$Line$RoundCap = {$: 'RoundCap'};
 var $joakin$elm_canvas$Canvas$Settings$Line$RoundJoin = {$: 'RoundJoin'};
 var $joakin$elm_canvas$Canvas$Internal$Canvas$SettingCommand = function (a) {
@@ -6202,6 +6195,11 @@ var $author$project$Updates$allowGuess = function (p) {
 };
 var $elm$json$Json$Decode$bool = _Json_decodeBool;
 var $elm$json$Json$Encode$bool = _Json_wrap;
+var $elm$core$Basics$modBy = _Basics_modBy;
+var $author$project$Updates$changeDrawer = function (model) {
+	var x = A2($elm$core$Basics$modBy, model.numPlayers, model.roundNumber + 1);
+	return (!x) ? model.numPlayers : x;
+};
 var $elm$core$List$append = F2(
 	function (xs, ys) {
 		if (!ys.b) {
@@ -6473,6 +6471,9 @@ var $elm_community$random_extra$Random$List$choose = function (list) {
 			gen);
 	}
 };
+var $elm$core$String$concat = function (strings) {
+	return A2($elm$core$String$join, '', strings);
+};
 var $author$project$Types$Player = F8(
 	function (name, username, currentGuess, score, isGuessing, isDrawing, isNamed, isCorrect) {
 		return {currentGuess: currentGuess, isCorrect: isCorrect, isDrawing: isDrawing, isGuessing: isGuessing, isNamed: isNamed, name: name, score: score, username: username};
@@ -6676,7 +6677,7 @@ var $author$project$Main$infoForJS = _Platform_outgoingPort(
 				]));
 	});
 var $author$project$Main$initPlayer = function (n) {
-	return {currentGuess: '', isCorrect: false, isDrawing: false, isGuessing: false, isNamed: false, name: '', score: 0, username: n};
+	return {currentGuess: '', isCorrect: false, isDrawing: false, isGuessing: false, isNamed: false, name: '', score: 0, username: n + 1};
 };
 var $elm$json$Json$Decode$list = _Json_decodeList;
 var $elm$json$Json$Encode$list = F2(
@@ -6717,35 +6718,6 @@ var $author$project$Updates$newDrawerUpdate = F2(
 					currentDrawer: player,
 					players: A2($author$project$Updates$updatePlayer, model.players, updatedPlayer)
 				});
-		}
-	});
-var $author$project$Updates$playerGuessUpdate = F3(
-	function (model, player, guess) {
-		var _v0 = model.currentWord;
-		if (_v0.$ === 'Nothing') {
-			return model;
-		} else {
-			var cw = _v0.a;
-			var foo = 5;
-			if (_Utils_eq(guess, cw)) {
-				var updatedPlayer = _Utils_update(
-					player,
-					{currentGuess: '', isCorrect: true, isGuessing: false, score: player.score + 1});
-				return _Utils_update(
-					model,
-					{
-						players: A2($author$project$Updates$updatePlayer, model.players, updatedPlayer)
-					});
-			} else {
-				var updatedPlayer = _Utils_update(
-					player,
-					{currentGuess: ''});
-				return _Utils_update(
-					model,
-					{
-						players: A2($author$project$Updates$updatePlayer, model.players, updatedPlayer)
-					});
-			}
 		}
 	});
 var $avh4$elm_color$Color$blue = A4($avh4$elm_color$Color$RgbaSpace, 52 / 255, 101 / 255, 164 / 255, 1.0);
@@ -6791,9 +6763,6 @@ var $author$project$Updates$receiveTracer = F2(
 				{tracer: $elm$core$Maybe$Nothing});
 		}
 	});
-var $elm$core$String$concat = function (strings) {
-	return A2($elm$core$String$join, '', strings);
-};
 var $elm$core$String$fromFloat = _String_fromNumber;
 var $elm$core$Basics$round = _Basics_round;
 var $avh4$elm_color$Color$toCssString = function (_v0) {
@@ -6835,7 +6804,8 @@ var $author$project$Main$sendColor = function (color) {
 	var eraser = $avh4$elm_color$Color$toCssString($avh4$elm_color$Color$white);
 	var brown = $avh4$elm_color$Color$toCssString($avh4$elm_color$Color$brown);
 	var blue = $avh4$elm_color$Color$toCssString($avh4$elm_color$Color$blue);
-	var n = _Utils_eq(want, red) ? 1 : (_Utils_eq(want, orange) ? 2 : (_Utils_eq(want, yellow) ? 3 : (_Utils_eq(want, green) ? 4 : (_Utils_eq(want, blue) ? 5 : (_Utils_eq(want, purple) ? 6 : (_Utils_eq(want, brown) ? 7 : (_Utils_eq(want, eraser) ? 8 : 0)))))));
+	var black = $avh4$elm_color$Color$toCssString($avh4$elm_color$Color$black);
+	var n = _Utils_eq(want, red) ? 1 : (_Utils_eq(want, orange) ? 2 : (_Utils_eq(want, yellow) ? 3 : (_Utils_eq(want, green) ? 4 : (_Utils_eq(want, blue) ? 5 : (_Utils_eq(want, purple) ? 6 : (_Utils_eq(want, brown) ? 7 : (_Utils_eq(want, black) ? 9 : (_Utils_eq(want, eraser) ? 8 : 0))))))));
 	return $author$project$Main$infoForJS(
 		{
 			data: $elm$json$Json$Encode$int(n),
@@ -6848,7 +6818,7 @@ var $elm$core$Tuple$second = function (_v0) {
 };
 var $author$project$Main$sendTracer = F3(
 	function (n, p, model) {
-		if (model.username === 1) {
+		if (_Utils_eq(model.username, model.drawerID)) {
 			var _v0 = model.tracer;
 			if (_v0.$ === 'Nothing') {
 				return $elm$core$Platform$Cmd$none;
@@ -6878,6 +6848,7 @@ var $tricycle$system_actor_model$System$Message$toCmd = A2(
 	$elm$core$Basics$composeL,
 	$elm$core$Task$perform($elm$core$Basics$identity),
 	$elm$core$Task$succeed);
+var $elm$core$String$toUpper = _String_toUpper;
 var $author$project$Main$update = F2(
 	function (msg, model) {
 		switch (msg.$) {
@@ -6888,7 +6859,7 @@ var $author$project$Main$update = F2(
 				var _v1 = outsideInfo.tag;
 				switch (_v1) {
 					case 'sharedModel/tracer':
-						if (model.username !== 1) {
+						if (!_Utils_eq(model.username, model.drawerID)) {
 							var _v2 = A2(
 								$elm$json$Json$Decode$decodeValue,
 								$elm$json$Json$Decode$list($elm$json$Json$Decode$float),
@@ -6928,7 +6899,7 @@ var $author$project$Main$update = F2(
 									{gameTime: n}),
 								$elm$core$Platform$Cmd$none);
 						}
-					case 'sharedModel/restStart':
+					case 'sharedModel/numPlayers':
 						var _v5 = A2($elm$json$Json$Decode$decodeValue, $elm$json$Json$Decode$int, outsideInfo.data);
 						if (_v5.$ === 'Err') {
 							return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
@@ -6937,21 +6908,19 @@ var $author$project$Main$update = F2(
 							return _Utils_Tuple2(
 								_Utils_update(
 									model,
-									{restStart: n}),
+									{numPlayers: n}),
 								$elm$core$Platform$Cmd$none);
 						}
-					case 'sharedModel/numPlayers':
+					case 'sharedModel/drawerID':
 						var _v6 = A2($elm$json$Json$Decode$decodeValue, $elm$json$Json$Decode$int, outsideInfo.data);
 						if (_v6.$ === 'Err') {
 							return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
 						} else {
 							var n = _v6.a;
 							return _Utils_Tuple2(
-								_Utils_eq(model.username, -1) ? _Utils_update(
+								_Utils_update(
 									model,
-									{numPlayers: n, username: n}) : _Utils_update(
-									model,
-									{numPlayers: n}),
+									{drawerID: n}),
 								$elm$core$Platform$Cmd$none);
 						}
 					case 'sharedModel/roundNumber':
@@ -7041,72 +7010,18 @@ var $author$project$Main$update = F2(
 									{size: f}),
 								$elm$core$Platform$Cmd$none);
 						}
-					case 'players/0':
-						var _v14 = A2($elm$json$Json$Decode$decodeValue, $author$project$Main$decodePlayer, outsideInfo.data);
-						if (_v14.$ === 'Err') {
-							return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
-						} else {
-							var f = _v14.a;
-							return _Utils_Tuple2(
-								_Utils_update(
-									model,
-									{
-										currentWord: $elm$core$Maybe$Just('SUCCESS0')
-									}),
-								$elm$core$Platform$Cmd$none);
-						}
-					case 'players/1':
-						var _v15 = A2($elm$json$Json$Decode$decodeValue, $author$project$Main$decodePlayer, outsideInfo.data);
-						if (_v15.$ === 'Err') {
-							return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
-						} else {
-							var f = _v15.a;
-							return _Utils_Tuple2(
-								_Utils_update(
-									model,
-									{
-										currentWord: $elm$core$Maybe$Just('SUCCESS1')
-									}),
-								$elm$core$Platform$Cmd$none);
-						}
-					case 'players/2':
-						var _v16 = A2($elm$json$Json$Decode$decodeValue, $author$project$Main$decodePlayer, outsideInfo.data);
-						if (_v16.$ === 'Err') {
-							return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
-						} else {
-							var f = _v16.a;
-							return _Utils_Tuple2(
-								_Utils_update(
-									model,
-									{
-										currentWord: $elm$core$Maybe$Just('SUCCESS2')
-									}),
-								$elm$core$Platform$Cmd$none);
-						}
-					case 'players/3':
-						var _v17 = A2($elm$json$Json$Decode$decodeValue, $author$project$Main$decodePlayer, outsideInfo.data);
-						if (_v17.$ === 'Err') {
-							return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
-						} else {
-							var f = _v17.a;
-							return _Utils_Tuple2(
-								_Utils_update(
-									model,
-									{
-										currentWord: $elm$core$Maybe$Just('SUCCESS3')
-									}),
-								$elm$core$Platform$Cmd$none);
-						}
 					case 'players':
-						var _v18 = A2(
+						var _v14 = A2(
 							$elm$json$Json$Decode$decodeValue,
 							$elm$json$Json$Decode$list($author$project$Main$decodePlayer),
 							outsideInfo.data);
-						if (_v18.$ === 'Err') {
+						if (_v14.$ === 'Err') {
 							return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
 						} else {
-							var ps = _v18.a;
-							return _Utils_Tuple2(
+							var ps = _v14.a;
+							return (_Utils_cmp(
+								$elm$core$List$length(ps),
+								model.numPlayers) < 0) ? _Utils_Tuple2(model, $elm$core$Platform$Cmd$none) : _Utils_Tuple2(
 								_Utils_update(
 									model,
 									{players: ps}),
@@ -7128,7 +7043,7 @@ var $author$project$Main$update = F2(
 					} else {
 						var p = ps.a;
 						var rest = ps.b;
-						return (!p.isCorrect) || stillGuessing(rest);
+						return (!(p.isCorrect || _Utils_eq(p.username, model.drawerID))) || stillGuessing(rest);
 					}
 				};
 				return _Utils_Tuple2(
@@ -7136,43 +7051,45 @@ var $author$project$Main$update = F2(
 					$elm$core$Platform$Cmd$batch(
 						_List_fromArray(
 							[
-								(model.roundTime === 1) ? $tricycle$system_actor_model$System$Message$toCmd($author$project$Types$RoundOver) : (((model.gameTime - model.restStart) === 5) ? $tricycle$system_actor_model$System$Message$toCmd($author$project$Types$StartRound) : ((!stillGuessing(model.players)) ? $tricycle$system_actor_model$System$Message$toCmd($author$project$Types$RoundOver) : $elm$core$Platform$Cmd$none)),
-								$author$project$Main$infoForJS(
+								(model.roundTime === 1) ? $tricycle$system_actor_model$System$Message$toCmd($author$project$Types$RoundOver) : (((!stillGuessing(model.players)) && model.startedPlaying) ? $tricycle$system_actor_model$System$Message$toCmd($author$project$Types$RoundOver) : $elm$core$Platform$Cmd$none),
+								_Utils_eq(model.username, model.drawerID) ? $author$project$Main$infoForJS(
 								{
 									data: $elm$json$Json$Encode$int(model.roundTime - 1),
 									tag: 'sharedModel/roundTime'
-								}),
-								$author$project$Main$infoForJS(
+								}) : $elm$core$Platform$Cmd$none,
+								_Utils_eq(model.username, model.drawerID) ? $author$project$Main$infoForJS(
 								{
 									data: $elm$json$Json$Encode$int(model.gameTime + 1),
 									tag: 'sharedModel/gameTime'
-								}),
-								$author$project$Main$infoForJS(
-								{
-									data: A2($elm$json$Json$Encode$list, $author$project$Main$encodePlayer, model.players),
-									tag: 'players'
-								})
+								}) : $elm$core$Platform$Cmd$none
 							])));
 			case 'NewPlayer':
 				return _Utils_Tuple2(
 					_Utils_update(
 						model,
-						{startedPlaying: true}),
+						{
+							players: _Utils_ap(
+								model.players,
+								_List_fromArray(
+									[
+										$author$project$Main$initPlayer(model.numPlayers)
+									])),
+							startedPlaying: true,
+							username: model.numPlayers + 1
+						}),
 					$elm$core$Platform$Cmd$batch(
 						_List_fromArray(
 							[
 								$author$project$Main$infoForJS(
 								{
-									data: A2(
-										$elm$json$Json$Encode$list,
-										$author$project$Main$encodePlayer,
-										_Utils_ap(
-											model.players,
-											_List_fromArray(
-												[
-													$author$project$Main$initPlayer(model.numPlayers)
-												]))),
-									tag: 'players/'
+									data: $author$project$Main$encodePlayer(
+										$author$project$Main$initPlayer(model.numPlayers)),
+									tag: $elm$core$String$concat(
+										_List_fromArray(
+											[
+												'players/',
+												$elm$core$String$fromInt(model.numPlayers)
+											]))
 								}),
 								$author$project$Main$infoForJS(
 								{
@@ -7186,25 +7103,46 @@ var $author$project$Main$update = F2(
 				var updatedPlayer = _Utils_update(
 					player,
 					{name: newName});
+				var updatedPlayers = A2($author$project$Updates$updatePlayer, model.players, updatedPlayer);
+				var newModel = _Utils_update(
+					model,
+					{
+						players: A2($author$project$Updates$updatePlayer, model.players, updatedPlayer)
+					});
 				return _Utils_Tuple2(
-					_Utils_update(
-						model,
+					model,
+					$author$project$Main$infoForJS(
 						{
-							players: A2($author$project$Updates$updatePlayer, model.players, updatedPlayer)
-						}),
-					$elm$core$Platform$Cmd$none);
+							data: $author$project$Main$encodePlayer(updatedPlayer),
+							tag: $elm$core$String$concat(
+								_List_fromArray(
+									[
+										'players/',
+										$elm$core$String$fromInt(model.username - 1)
+									]))
+						}));
 			case 'SubmitName':
 				var player = msg.a;
 				var updatedPlayer = _Utils_update(
 					player,
 					{isNamed: true});
+				var newModel = _Utils_update(
+					model,
+					{
+						players: A2($author$project$Updates$updatePlayer, model.players, updatedPlayer)
+					});
 				return _Utils_Tuple2(
-					_Utils_update(
-						model,
+					model,
+					$author$project$Main$infoForJS(
 						{
-							players: A2($author$project$Updates$updatePlayer, model.players, updatedPlayer)
-						}),
-					$elm$core$Platform$Cmd$none);
+							data: $author$project$Main$encodePlayer(updatedPlayer),
+							tag: $elm$core$String$concat(
+								_List_fromArray(
+									[
+										'players/',
+										$elm$core$String$fromInt(model.username - 1)
+									]))
+						}));
 			case 'UpdateCurrentGuess':
 				var player = msg.a;
 				var guess = msg.b;
@@ -7212,18 +7150,61 @@ var $author$project$Main$update = F2(
 					player,
 					{currentGuess: guess});
 				return _Utils_Tuple2(
-					_Utils_update(
-						model,
+					model,
+					$author$project$Main$infoForJS(
 						{
-							players: A2($author$project$Updates$updatePlayer, model.players, updatedPlayer)
-						}),
-					$elm$core$Platform$Cmd$none);
+							data: $author$project$Main$encodePlayer(updatedPlayer),
+							tag: $elm$core$String$concat(
+								_List_fromArray(
+									[
+										'players/',
+										$elm$core$String$fromInt(player.username - 1)
+									]))
+						}));
 			case 'Guess':
 				var player = msg.a;
 				var guess = msg.b;
-				return _Utils_Tuple2(
-					A3($author$project$Updates$playerGuessUpdate, model, player, guess),
-					$elm$core$Platform$Cmd$none);
+				var _v16 = model.currentWord;
+				if (_v16.$ === 'Nothing') {
+					return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
+				} else {
+					var cw = _v16.a;
+					if (_Utils_eq(
+						$elm$core$String$toUpper(guess),
+						$elm$core$String$toUpper(cw))) {
+						var updatedPlayer = _Utils_update(
+							player,
+							{currentGuess: '', isCorrect: true, isGuessing: false, score: player.score + 1});
+						return _Utils_Tuple2(
+							model,
+							$author$project$Main$infoForJS(
+								{
+									data: $author$project$Main$encodePlayer(updatedPlayer),
+									tag: $elm$core$String$concat(
+										_List_fromArray(
+											[
+												'players/',
+												$elm$core$String$fromInt(player.username - 1)
+											]))
+								}));
+					} else {
+						var updatedPlayer = _Utils_update(
+							player,
+							{currentGuess: ''});
+						return _Utils_Tuple2(
+							model,
+							$author$project$Main$infoForJS(
+								{
+									data: $author$project$Main$encodePlayer(updatedPlayer),
+									tag: $elm$core$String$concat(
+										_List_fromArray(
+											[
+												'players/',
+												$elm$core$String$fromInt(player.username - 1)
+											]))
+								}));
+					}
+				}
 			case 'RoundOver':
 				return _Utils_Tuple2(
 					function () {
@@ -7238,6 +7219,7 @@ var $author$project$Main$update = F2(
 								p,
 								{isCorrect: false, isDrawing: false, isGuessing: false});
 						};
+						var newList = A2($elm$core$List$map, playerRoundReset, model.players);
 						return $elm$core$Platform$Cmd$batch(
 							_List_fromArray(
 								[
@@ -7250,11 +7232,6 @@ var $author$project$Main$update = F2(
 									{
 										data: $elm$json$Json$Encode$bool(false),
 										tag: 'sharedModel/roundPlaying'
-									}),
-									$author$project$Main$infoForJS(
-									{
-										data: $elm$json$Json$Encode$int(model.gameTime),
-										tag: 'sharedModel/restStart'
 									}),
 									$author$project$Main$infoForJS(
 									{
@@ -7273,23 +7250,26 @@ var $author$project$Main$update = F2(
 									}),
 									$author$project$Main$infoForJS(
 									{
-										data: A2(
-											$elm$json$Json$Encode$list,
-											$author$project$Main$encodePlayer,
-											A2($elm$core$List$map, playerRoundReset, model.players)),
+										data: A2($elm$json$Json$Encode$list, $author$project$Main$encodePlayer, newList),
 										tag: 'players'
+									}),
+									$author$project$Main$infoForJS(
+									{
+										data: $elm$json$Json$Encode$int(
+											$author$project$Updates$changeDrawer(model)),
+										tag: 'sharedModel/drawerID'
 									})
 								]));
 					}());
 			case 'NewWord':
-				var _v20 = msg.a;
-				var newWord = _v20.a;
-				var words = _v20.b;
+				var _v17 = msg.a;
+				var newWord = _v17.a;
+				var words = _v17.b;
 				return _Utils_Tuple2(
 					_Utils_update(
 						model,
 						{unusedWords: words}),
-					$elm$core$Platform$Cmd$batch(
+					_Utils_eq(model.username, model.drawerID) ? $elm$core$Platform$Cmd$batch(
 						_List_fromArray(
 							[
 								$author$project$Main$infoForJS(
@@ -7313,43 +7293,29 @@ var $author$project$Main$update = F2(
 										});
 								}
 							}()
-							])));
+							])) : $elm$core$Platform$Cmd$none);
 			case 'NewDrawer':
-				var _v22 = msg.a;
-				var drawer = _v22.a;
+				var _v19 = msg.a;
+				var drawer = _v19.a;
 				return _Utils_Tuple2(
 					A2($author$project$Updates$newDrawerUpdate, model, drawer),
 					$elm$core$Platform$Cmd$none);
 			case 'NewHost':
-				var _v23 = msg.a;
-				var newDrawerID = _v23.a;
+				var _v20 = msg.a;
+				var newDrawerID = _v20.a;
 				return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
 			case 'StartRound':
 				return _Utils_Tuple2(
 					_Utils_update(
 						model,
-						{
-							drawnSegments: _List_Nil,
-							players: A2($elm$core$List$map, $author$project$Updates$allowGuess, model.players),
-							segments: $elm$core$Array$empty,
-							tracer: $elm$core$Maybe$Nothing
-						}),
-					$elm$core$Platform$Cmd$batch(
+						{drawnSegments: _List_Nil, segments: $elm$core$Array$empty, tracer: $elm$core$Maybe$Nothing}),
+					_Utils_eq(model.username, model.drawerID) ? $elm$core$Platform$Cmd$batch(
 						_List_fromArray(
 							[
 								A2(
 								$elm$random$Random$generate,
 								$author$project$Types$NewWord,
 								$elm_community$random_extra$Random$List$choose(model.unusedWords)),
-								A2(
-								$elm$random$Random$generate,
-								$author$project$Types$NewDrawer,
-								$elm_community$random_extra$Random$List$choose(model.players)),
-								A2(
-								$elm$random$Random$generate,
-								$author$project$Types$NewHost,
-								$elm_community$random_extra$Random$List$choose(
-									A2($elm$core$List$range, 1, model.numPlayers))),
 								$author$project$Main$infoForJS(
 								{
 									data: $elm$json$Json$Encode$int(60),
@@ -7364,8 +7330,16 @@ var $author$project$Main$update = F2(
 								{
 									data: $elm$json$Json$Encode$bool(true),
 									tag: 'sharedModel/roundPlaying'
+								}),
+								$author$project$Main$infoForJS(
+								{
+									data: A2(
+										$elm$json$Json$Encode$list,
+										$author$project$Main$encodePlayer,
+										A2($elm$core$List$map, $author$project$Updates$allowGuess, model.players)),
+									tag: 'players/'
 								})
-							])));
+							])) : $elm$core$Platform$Cmd$none);
 			case 'BeginDraw':
 				var point = msg.a;
 				var newModel = _Utils_update(
@@ -7379,9 +7353,9 @@ var $author$project$Main$update = F2(
 					A3($author$project$Main$sendTracer, 0.0, point, model));
 			case 'ContDraw':
 				var point = msg.a;
-				var _v24 = model.tracer;
-				if (_v24.$ === 'Just') {
-					var x = _v24.a;
+				var _v21 = model.tracer;
+				if (_v21.$ === 'Just') {
+					var x = _v21.a;
 					var newModel = A3($author$project$Updates$addSegment, point, x, model);
 					return _Utils_Tuple2(
 						newModel,
@@ -7391,9 +7365,9 @@ var $author$project$Main$update = F2(
 				}
 			case 'EndDraw':
 				var point = msg.a;
-				var _v25 = model.tracer;
-				if (_v25.$ === 'Just') {
-					var x = _v25.a;
+				var _v22 = model.tracer;
+				if (_v22.$ === 'Just') {
+					var x = _v22.a;
 					var newModel = A3($author$project$Updates$endSegment, point, x, model);
 					return _Utils_Tuple2(
 						newModel,
@@ -7403,14 +7377,14 @@ var $author$project$Main$update = F2(
 				}
 			case 'ChangeColor':
 				var c = msg.a;
-				return _Utils_Tuple2(
+				return _Utils_eq(model.username, model.drawerID) ? _Utils_Tuple2(
 					_Utils_update(
 						model,
 						{color: c}),
-					$author$project$Main$sendColor(c));
+					$author$project$Main$sendColor(c)) : _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
 			case 'ChangeSize':
 				var f = msg.a;
-				return _Utils_Tuple2(
+				return _Utils_eq(model.username, model.drawerID) ? _Utils_Tuple2(
 					_Utils_update(
 						model,
 						{size: f}),
@@ -7418,7 +7392,7 @@ var $author$project$Main$update = F2(
 						{
 							data: $elm$json$Json$Encode$float(f),
 							tag: 'sharedModel/size'
-						}));
+						})) : _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
 			default:
 				return _Utils_Tuple2(
 					$author$project$Main$initModel,
@@ -7452,11 +7426,6 @@ var $author$project$Main$update = F2(
 								}),
 								$author$project$Main$infoForJS(
 								{
-									data: $elm$json$Json$Encode$int(0),
-									tag: 'sharedModel/restStart'
-								}),
-								$author$project$Main$infoForJS(
-								{
 									data: $elm$json$Json$Encode$string('NOWORD'),
 									tag: 'sharedModel/currentWord'
 								}),
@@ -7464,6 +7433,21 @@ var $author$project$Main$update = F2(
 								{
 									data: A2($elm$json$Json$Encode$list, $author$project$Main$encodePlayer, _List_Nil),
 									tag: 'players/'
+								}),
+								$author$project$Main$infoForJS(
+								{
+									data: $elm$json$Json$Encode$int(1),
+									tag: 'sharedModel/drawerID'
+								}),
+								$author$project$Main$infoForJS(
+								{
+									data: A2($elm$json$Json$Encode$list, $elm$json$Json$Encode$float, _List_Nil),
+									tag: 'sharedModel/tracer'
+								}),
+								$author$project$Main$infoForJS(
+								{
+									data: A2($elm$json$Json$Encode$list, $elm$json$Json$Encode$string, $author$project$Words$wordList),
+									tag: 'sharedModel/unusedWords'
 								})
 							])));
 		}
@@ -7489,6 +7473,7 @@ var $author$project$Types$Guess = F2(
 		return {$: 'Guess', a: a, b: b};
 	});
 var $author$project$Types$NewPlayer = {$: 'NewPlayer'};
+var $author$project$Types$StartRound = {$: 'StartRound'};
 var $author$project$Types$SubmitName = function (a) {
 	return {$: 'SubmitName', a: a};
 };
@@ -7522,6 +7507,14 @@ var $mdgriffith$elm_ui$Element$behindContent = function (element) {
 	return A2($mdgriffith$elm_ui$Element$createNearby, $mdgriffith$elm_ui$Internal$Model$Behind, element);
 };
 var $elm$html$Html$button = _VirtualDom_node('button');
+var $elm$html$Html$Attributes$stringProperty = F2(
+	function (key, string) {
+		return A2(
+			_VirtualDom_property,
+			key,
+			$elm$json$Json$Encode$string(string));
+	});
+var $elm$html$Html$Attributes$class = $elm$html$Html$Attributes$stringProperty('className');
 var $mdgriffith$elm_ui$Internal$Model$Colored = F3(
 	function (a, b, c) {
 		return {$: 'Colored', a: a, b: b, c: c};
@@ -7757,14 +7750,6 @@ var $mdgriffith$elm_ui$Internal$Flag$alignBottom = $mdgriffith$elm_ui$Internal$F
 var $mdgriffith$elm_ui$Internal$Flag$alignRight = $mdgriffith$elm_ui$Internal$Flag$flag(40);
 var $mdgriffith$elm_ui$Internal$Flag$centerX = $mdgriffith$elm_ui$Internal$Flag$flag(42);
 var $mdgriffith$elm_ui$Internal$Flag$centerY = $mdgriffith$elm_ui$Internal$Flag$flag(43);
-var $elm$html$Html$Attributes$stringProperty = F2(
-	function (key, string) {
-		return A2(
-			_VirtualDom_property,
-			key,
-			$elm$json$Json$Encode$string(string));
-	});
-var $elm$html$Html$Attributes$class = $elm$html$Html$Attributes$stringProperty('className');
 var $elm$core$Set$Set_elm_builtin = function (a) {
 	return {$: 'Set_elm_builtin', a: a};
 };
@@ -14716,37 +14701,18 @@ var $joakin$elm_canvas$Canvas$toHtml = F3(
 			entities);
 	});
 var $author$project$Main$viewPlayerInfo = function (p) {
-	return A2(
-		$elm$core$List$map,
-		$author$project$Main$applyHtmlDiv,
-		_List_fromArray(
-			[
-				_List_fromArray(
-				[
-					$elm$html$Html$text('Name: ' + p.name)
-				]),
-				_List_fromArray(
+	var playerName = p.isNamed ? p.name : ('Player ' + $elm$core$String$fromInt(p.username));
+	return _List_fromArray(
+		[
+			A2(
+			$elm$html$Html$div,
+			_List_Nil,
+			_List_fromArray(
 				[
 					$elm$html$Html$text(
-					'Player ID: ' + $elm$core$String$fromInt(p.username))
-				]),
-				_List_fromArray(
-				[
-					$elm$html$Html$text('Current Guess: ' + p.currentGuess)
-				]),
-				_List_fromArray(
-				[
-					$elm$html$Html$text(
-					'Score: ' + $elm$core$String$fromInt(p.score))
-				]),
-				p.isDrawing ? _List_fromArray(
-				[
-					$elm$html$Html$text(p.name + ' is drawing!')
-				]) : _List_fromArray(
-				[
-					$elm$html$Html$text('')
-				])
-			]));
+					playerName + (' | Score: ' + ($elm$core$String$fromInt(p.score) + (p.isCorrect ? ' -- Correct!' : ''))))
+				]))
+		]);
 };
 var $author$project$Main$view = function (model) {
 	return A2(
@@ -14754,66 +14720,83 @@ var $author$project$Main$view = function (model) {
 		_List_Nil,
 		_List_fromArray(
 			[
-				A2(
+				model.startedPlaying ? A2(
 				$elm$html$Html$div,
 				_List_Nil,
-				_List_fromArray(
-					[
-						$elm$html$Html$text(
-						'Current username is: ' + $elm$core$String$fromInt(model.username))
-					])),
-				A2(
-				$elm$html$Html$div,
-				_List_Nil,
-				_List_fromArray(
-					[
-						$elm$html$Html$text(
-						'Timer:' + $elm$core$String$fromInt(model.roundTime))
-					])),
-				A2(
-				$elm$html$Html$div,
-				_List_Nil,
-				_List_fromArray(
-					[
-						A2(
-						$elm$html$Html$button,
-						_List_fromArray(
-							[
-								$elm$html$Html$Events$onClick($author$project$Types$StartRound)
-							]),
-						_List_fromArray(
-							[
-								$elm$html$Html$text('Start Round:')
-							])),
-						$elm$html$Html$text(
-						'Round num:' + ($elm$core$String$fromInt(model.roundNumber) + ('Current word:' + function () {
-							var _v0 = model.currentWord;
-							if (_v0.$ === 'Nothing') {
-								return 'No word';
+				function () {
+					if (_Utils_eq(model.username, model.drawerID) && (!model.roundPlaying)) {
+						var _v0 = A2($author$project$Updates$findPlayer, model.username, model.players);
+						if (_v0.$ === 'Nothing') {
+							return _List_Nil;
+						} else {
+							var p = _v0.a;
+							return p.isNamed ? _List_fromArray(
+								[
+									$elm$html$Html$text('You are the drawer! Click to start the round: '),
+									A2(
+									$elm$html$Html$button,
+									_List_fromArray(
+										[
+											$elm$html$Html$Attributes$class('button'),
+											$elm$html$Html$Events$onClick($author$project$Types$StartRound)
+										]),
+									_List_fromArray(
+										[
+											$elm$html$Html$text('Start Round')
+										]))
+								]) : _List_Nil;
+						}
+					} else {
+						if (!model.roundPlaying) {
+							var _v1 = A2($author$project$Updates$findPlayer, model.username, model.players);
+							if (_v1.$ === 'Nothing') {
+								return _List_Nil;
 							} else {
-								var w = _v0.a;
-								return w;
+								var p = _v1.a;
+								return p.isNamed ? _List_fromArray(
+									[
+										$elm$html$Html$text('You will be guessing! Waiting for round to start...')
+									]) : _List_Nil;
 							}
-						}())))
-					])),
-				A2(
+						} else {
+							return _List_fromArray(
+								[
+									A2($elm$html$Html$div, _List_Nil, _List_Nil)
+								]);
+						}
+					}
+				}()) : A2($elm$html$Html$div, _List_Nil, _List_Nil),
+				(model.startedPlaying && (!(!model.roundNumber))) ? A2(
 				$elm$html$Html$div,
 				_List_Nil,
 				_List_fromArray(
 					[
-						A2(
-						$elm$html$Html$button,
-						_List_fromArray(
-							[
-								$elm$html$Html$Events$onClick($author$project$Types$RoundOver)
-							]),
-						_List_fromArray(
-							[
-								$elm$html$Html$text('End round')
-							])),
 						$elm$html$Html$text(
-						'Game Time' + ($elm$core$String$fromInt(model.gameTime) + ('RestStart:' + $elm$core$String$fromInt(model.restStart))))
-					])),
+						' Round ' + $elm$core$String$fromInt(model.roundNumber))
+					])) : A2($elm$html$Html$div, _List_Nil, _List_Nil),
+				(model.roundPlaying && model.startedPlaying) ? A2(
+				$elm$html$Html$div,
+				_List_Nil,
+				_List_fromArray(
+					[
+						$elm$html$Html$text(
+						'Timer: ' + $elm$core$String$fromInt(model.roundTime))
+					])) : A2($elm$html$Html$div, _List_Nil, _List_Nil),
+				function () {
+				var _v2 = model.currentWord;
+				if (_v2.$ === 'Just') {
+					var w = _v2.a;
+					return _Utils_eq(model.username, model.drawerID) ? A2(
+						$elm$html$Html$div,
+						_List_Nil,
+						_List_fromArray(
+							[
+								$elm$html$Html$text('Draw: ' + w)
+							])) : A2($elm$html$Html$div, _List_Nil, _List_Nil);
+				} else {
+					return A2($elm$html$Html$div, _List_Nil, _List_Nil);
+				}
+			}(),
 				(!model.startedPlaying) ? A2(
 				$elm$html$Html$div,
 				_List_Nil,
@@ -14823,14 +14806,99 @@ var $author$project$Main$view = function (model) {
 						$elm$html$Html$button,
 						_List_fromArray(
 							[
+								$elm$html$Html$Attributes$class('button'),
 								$elm$html$Html$Events$onClick($author$project$Types$NewPlayer)
 							]),
 						_List_fromArray(
 							[
-								$elm$html$Html$text('Click to join!')
+								$elm$html$Html$text('Welcome! Click to join!')
 							]))
 					])) : A2($elm$html$Html$div, _List_Nil, _List_Nil),
+				function () {
+				var _v3 = A2($author$project$Updates$findPlayer, model.username, model.players);
+				if (_v3.$ === 'Nothing') {
+					return A2($elm$html$Html$div, _List_Nil, _List_Nil);
+				} else {
+					var p = _v3.a;
+					var nameInput = (!p.isNamed) ? _List_fromArray(
+						[
+							A2(
+							$elm$html$Html$input,
+							_List_fromArray(
+								[
+									$elm$html$Html$Attributes$class('input'),
+									$elm$html$Html$Attributes$placeholder('Enter Name'),
+									$elm$html$Html$Attributes$value(p.name),
+									$elm$html$Html$Events$onInput(
+									$author$project$Types$UpdateName(p))
+								]),
+							_List_Nil),
+							A2(
+							$elm$html$Html$button,
+							_List_fromArray(
+								[
+									$elm$html$Html$Attributes$class('button'),
+									$elm$html$Html$Events$onClick(
+									$author$project$Types$SubmitName(p))
+								]),
+							_List_fromArray(
+								[
+									$elm$html$Html$text('Enter your name!')
+								]))
+						]) : _List_fromArray(
+						[
+							A2($elm$html$Html$div, _List_Nil, _List_Nil)
+						]);
+					var guessInput = _List_fromArray(
+						[
+							A2(
+							$elm$html$Html$input,
+							_List_fromArray(
+								[
+									$elm$html$Html$Attributes$class('input'),
+									$elm$html$Html$Attributes$placeholder(
+									'Insert guess for ' + $elm$core$String$fromInt(p.username)),
+									$elm$html$Html$Attributes$value(p.currentGuess),
+									$elm$html$Html$Events$onInput(
+									$author$project$Types$UpdateCurrentGuess(p))
+								]),
+							_List_Nil),
+							A2(
+							$elm$html$Html$button,
+							_List_fromArray(
+								[
+									$elm$html$Html$Attributes$class('button'),
+									$elm$html$Html$Events$onClick(
+									A2($author$project$Types$Guess, p, p.currentGuess))
+								]),
+							_List_fromArray(
+								[
+									$elm$html$Html$text(
+									'Submit guess player' + $elm$core$String$fromInt(p.username))
+								]))
+						]);
+					return A2(
+						$elm$html$Html$div,
+						_List_Nil,
+						(_Utils_eq(model.username, model.drawerID) || (!p.isGuessing)) ? nameInput : _Utils_ap(nameInput, guessInput));
+				}
+			}(),
+				model.startedPlaying ? A2(
+				$elm$html$Html$div,
+				_List_fromArray(
+					[
+						$elm$html$Html$Attributes$class('playerheader')
+					]),
+				_List_fromArray(
+					[
+						$elm$html$Html$text('Scoreboard')
+					])) : A2($elm$html$Html$div, _List_Nil, _List_Nil),
+				model.startedPlaying ? $author$project$Main$applyHtmlDiv(
 				A2(
+					$elm$core$List$map,
+					$author$project$Main$applyHtmlDiv,
+					A2($elm$core$List$map, $author$project$Main$viewPlayerInfo, model.players))) : A2($elm$html$Html$div, _List_Nil, _List_Nil),
+				model.startedPlaying ? A2(
 				$elm$html$Html$div,
 				_List_Nil,
 				_List_fromArray(
@@ -14839,96 +14907,18 @@ var $author$project$Main$view = function (model) {
 						$elm$html$Html$button,
 						_List_fromArray(
 							[
+								$elm$html$Html$Attributes$class('button'),
 								$elm$html$Html$Events$onClick($author$project$Types$FreshGame)
 							]),
 						_List_fromArray(
 							[
-								$elm$html$Html$text('CLICK TO START THE GAME FRESH')
+								$elm$html$Html$text('Finish Game')
 							]))
-					])),
-				function () {
-				var _v1 = A2($author$project$Updates$findPlayer, model.username, model.players);
-				if (_v1.$ === 'Nothing') {
-					return A2($elm$html$Html$div, _List_Nil, _List_Nil);
-				} else {
-					var p = _v1.a;
-					var nameInput = (!p.isNamed) ? _List_fromArray(
-						[
-							A2(
-							$elm$html$Html$button,
-							_List_fromArray(
-								[
-									$elm$html$Html$Events$onClick(
-									$author$project$Types$SubmitName(p))
-								]),
-							_List_fromArray(
-								[
-									$elm$html$Html$text('Enter your name!')
-								])),
-							A2(
-							$elm$html$Html$input,
-							_List_fromArray(
-								[
-									$elm$html$Html$Attributes$placeholder('Enter Name'),
-									$elm$html$Html$Attributes$value(p.name),
-									$elm$html$Html$Events$onInput(
-									$author$project$Types$UpdateName(p))
-								]),
-							_List_Nil)
-						]) : _List_fromArray(
-						[
-							A2($elm$html$Html$div, _List_Nil, _List_Nil)
-						]);
-					var guessInput = p.isGuessing ? _List_fromArray(
-						[
-							A2(
-							$elm$html$Html$button,
-							_List_fromArray(
-								[
-									$elm$html$Html$Events$onClick(
-									A2($author$project$Types$Guess, p, p.currentGuess))
-								]),
-							_List_fromArray(
-								[
-									$elm$html$Html$text(
-									'Submit guess player' + $elm$core$String$fromInt(p.username))
-								])),
-							A2(
-							$elm$html$Html$input,
-							_List_fromArray(
-								[
-									$elm$html$Html$Attributes$placeholder(
-									'Insert guess for ' + $elm$core$String$fromInt(p.username)),
-									$elm$html$Html$Attributes$value(p.currentGuess),
-									$elm$html$Html$Events$onInput(
-									$author$project$Types$UpdateCurrentGuess(p))
-								]),
-							_List_Nil)
-						]) : _List_fromArray(
-						[
-							A2(
-							$elm$html$Html$div,
-							_List_Nil,
-							_List_fromArray(
-								[
-									$elm$html$Html$text('nice job ur correct!!')
-								]))
-						]);
-					return A2(
-						$elm$html$Html$div,
-						_List_Nil,
-						_Utils_ap(nameInput, guessInput));
-				}
-			}(),
-				$author$project$Main$applyHtmlDiv(
-				A2(
-					$elm$core$List$map,
-					$author$project$Main$applyHtmlDiv,
-					A2($elm$core$List$map, $author$project$Main$viewPlayerInfo, model.players))),
+					])) : A2($elm$html$Html$div, _List_Nil, _List_Nil),
 				A3(
 				$joakin$elm_canvas$Canvas$toHtml,
-				_Utils_Tuple2(750, 750),
-				(model.username === 1) ? _List_fromArray(
+				_Utils_Tuple2(400, 400),
+				_Utils_eq(model.username, model.drawerID) ? _List_fromArray(
 					[
 						$mpizenberg$elm_pointer_events$Html$Events$Extra$Mouse$onDown(
 						A2(
@@ -14965,8 +14955,8 @@ var $author$project$Main$view = function (model) {
 								A3(
 								$joakin$elm_canvas$Canvas$rect,
 								_Utils_Tuple2(0, 0),
-								750,
-								750)
+								400,
+								400)
 							])),
 					model.drawnSegments)),
 				A2(
@@ -15057,6 +15047,17 @@ var $author$project$Main$view = function (model) {
 						_List_fromArray(
 							[
 								$elm$html$Html$text('Brown')
+							])),
+						A2(
+						$elm$html$Html$button,
+						_List_fromArray(
+							[
+								$elm$html$Html$Events$onClick(
+								$author$project$Types$ChangeColor($avh4$elm_color$Color$black))
+							]),
+						_List_fromArray(
+							[
+								$elm$html$Html$text('Black')
 							])),
 						A2(
 						$elm$html$Html$button,
