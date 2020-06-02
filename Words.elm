@@ -13,6 +13,7 @@ wordList =
     "Ladybug","Sun","Camera","Lamp","Tire","Cat","Lion","Toast","Church","Mailbox",
     "Toothbrush","Crayon","Dolphin","Nose","Truck","Egg","Peanut", "Laptop", "Headphones",
     "Key","Table","Bread","Monkey","Coronavirus","Wallet","Door","Window","Cloud",
-    "Regenstein","Mansueto","cs223","Ryerson","Ratner","Bartlett","Dean Boyer",
-    "Max Palevsky","Phoenix","Harper","Dollar Milkshake","Coffee","Zoom"
+    "Regenstein","Mansueto","cs223","Ratner","Bartlett","Dean Boyer",
+    "Max Palevsky","Phoenix","Harper","Coffee","Zoom",
+    "The Bean","Spotify"
   ]
