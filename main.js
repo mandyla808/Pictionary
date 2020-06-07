@@ -5236,7 +5236,7 @@ var $elm$core$Basics$negate = function (n) {
 	return -n;
 };
 var $author$project$Words$wordList = _List_fromArray(
-	['Angel', 'Eyeball', 'Pizza', 'Fireworks', 'Pumpkin', 'Baby', 'Flower', 'Rainbow', 'Beard', 'Giraffe', 'Glasses', 'Snowflake', 'Book', 'Stairs', 'Starfish', 'Bee', 'Igloo', 'Strawberry', 'Butterfly', 'Ladybug', 'Sun', 'Camera', 'Lamp', 'Tire', 'Cat', 'Lion', 'Toast', 'Church', 'Mailbox', 'Toothbrush', 'Crayon', 'Dolphin', 'Nose', 'Truck', 'Egg', 'Peanut', 'Laptop', 'Headphones', 'Key', 'Table', 'Bread', 'Monkey', 'Coronavirus', 'Wallet', 'Door', 'Window', 'Cloud', 'Regenstein', 'Mansueto', 'cs223', 'Ryerson', 'Ratner', 'Bartlett', 'Dean Boyer', 'Max Palevsky', 'Phoenix', 'Harper', 'Dollar Milkshake', 'Coffee', 'Zoom']);
+	['Angel', 'Eyeball', 'Pizza', 'Fireworks', 'Pumpkin', 'Baby', 'Flower', 'Rainbow', 'Beard', 'Giraffe', 'Glasses', 'Snowflake', 'Book', 'Stairs', 'Starfish', 'Bee', 'Igloo', 'Strawberry', 'Butterfly', 'Ladybug', 'Sun', 'Camera', 'Lamp', 'Tire', 'Cat', 'Lion', 'Toast', 'Church', 'Mailbox', 'Toothbrush', 'Crayon', 'Dolphin', 'Nose', 'Truck', 'Egg', 'Peanut', 'Laptop', 'Headphones', 'Key', 'Table', 'Bread', 'Monkey', 'Coronavirus', 'Wallet', 'Door', 'Window', 'Cloud', 'Regenstein', 'Mansueto', 'cs223', 'Ratner', 'Bartlett', 'Dean Boyer', 'Max Palevsky', 'Phoenix', 'Harper', 'Coffee', 'Zoom', 'The Bean', 'Spotify']);
 var $author$project$Main$initModel = {color: $avh4$elm_color$Color$black, currentDrawer: $elm$core$Maybe$Nothing, currentScreen: 0, currentWord: $elm$core$Maybe$Nothing, drawerID: 1, drawnSegments: _List_Nil, gameTime: 0, numPlayers: 0, players: _List_Nil, roundNumber: 0, roundPlaying: false, roundTime: 60, segments: $elm$core$Array$empty, size: 20.0, startedPlaying: false, tracer: $elm$core$Maybe$Nothing, unusedWords: $author$project$Words$wordList, username: -1};
 var $elm$core$Platform$Cmd$batch = _Platform_batch;
 var $elm$core$Platform$Cmd$none = $elm$core$Platform$Cmd$batch(_List_Nil);
@@ -6529,8 +6529,8 @@ var $author$project$Updates$drawSegments = function (model) {
 							A3(
 							$joakin$elm_canvas$Canvas$rect,
 							_Utils_Tuple2(1, 1),
-							748.0,
-							748.0)
+							498.0,
+							498.0)
 						]))
 				])
 		});
@@ -6818,7 +6818,7 @@ var $elm$core$Tuple$second = function (_v0) {
 };
 var $author$project$Main$sendTracer = F3(
 	function (n, p, model) {
-		if (_Utils_eq(model.username, model.drawerID)) {
+		if (_Utils_eq(model.username, model.drawerID) && model.roundPlaying) {
 			var _v0 = model.tracer;
 			if (_v0.$ === 'Nothing') {
 				return $elm$core$Platform$Cmd$none;
@@ -14917,7 +14917,7 @@ var $author$project$Main$view = function (model) {
 					])) : A2($elm$html$Html$div, _List_Nil, _List_Nil),
 				A3(
 				$joakin$elm_canvas$Canvas$toHtml,
-				_Utils_Tuple2(400, 400),
+				_Utils_Tuple2(500, 500),
 				_Utils_eq(model.username, model.drawerID) ? _List_fromArray(
 					[
 						$mpizenberg$elm_pointer_events$Html$Events$Extra$Mouse$onDown(
@@ -14955,8 +14955,8 @@ var $author$project$Main$view = function (model) {
 								A3(
 								$joakin$elm_canvas$Canvas$rect,
 								_Utils_Tuple2(0, 0),
-								400,
-								400)
+								500,
+								500)
 							])),
 					model.drawnSegments)),
 				A2(
@@ -15081,14 +15081,14 @@ var $author$project$Main$view = function (model) {
 							$mdgriffith$elm_ui$Element$height(
 							$mdgriffith$elm_ui$Element$px(5)),
 							$mdgriffith$elm_ui$Element$width(
-							$mdgriffith$elm_ui$Element$px(700)),
+							$mdgriffith$elm_ui$Element$px(500)),
 							$mdgriffith$elm_ui$Element$behindContent(
 							A2(
 								$mdgriffith$elm_ui$Element$el,
 								_List_fromArray(
 									[
 										$mdgriffith$elm_ui$Element$width(
-										$mdgriffith$elm_ui$Element$px(700)),
+										$mdgriffith$elm_ui$Element$px(500)),
 										$mdgriffith$elm_ui$Element$height(
 										$mdgriffith$elm_ui$Element$px(2)),
 										$mdgriffith$elm_ui$Element$Background$color(

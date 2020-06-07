@@ -1,0 +1,77 @@
+<html>
+<body style="background-color:powderblue;">
+<head>
+  <title>Pictionary</title>
+  <script src="elm-canvas.js" id=></script>
+  <script src="Main.js"></script>
+
+  <style type="text/css">
+    body {
+      font-family: 'Open Sans', Arial, sans-serif;
+      font-weight: 525;
+      background-color: #555555
+    }
+
+    .button {
+      color : black;
+      font-family: 'Open Sans', Arial, sans-serif;
+      font-weight: 525;
+      background-color: #white;
+      padding: 10px 24px;
+      text-align: center;
+      text-decoration: none;
+      display: inline-block;
+      font-size: 16px;
+    }
+
+    .input {
+      height : 41px;
+      font-size: 16px;
+      font-family: 'Open Sans', Arial, sans-serif;
+      font-weight: 525
+    }
+
+    .playerheader {
+      font-weight: 600
+    }
+  </style>
+
+
+</head>
+
+<body>
+  <div id="myapp"></div>
+
+  <!--Firebase stuff-->
+  <script src="https://www.gstatic.com/firebasejs/7.14.5/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/7.14.5/firebase-analytics.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/7.14.5/firebase-database.js"></script>
+
+  <script>
+    // Your web app's Firebase configuration
+    var firebaseConfig = {
+    apiKey: "AIzaSyDHW1n-ld4UGUT9e0qZC79pMSRTCI5yvA4",
+    authDomain: "pictionary-333be.firebaseapp.com",
+    databaseURL: "https://pictionary-333be.firebaseio.com",
+    projectId: "pictionary-333be",
+    storageBucket: "pictionary-333be.appspot.com",
+    messagingSenderId: "323505809282",
+    appId: "1:323505809282:web:3885040476eb423b7f919b",
+    measurementId: "G-PXKKMT3ZJR"
+    };
+    // Initialize Firebase
+    firebase.initializeApp(firebaseConfig);
+    firebase.analytics();
+  </script>
+
+  <script>
+  var app = Elm.Main.init({
+    node: document.getElementById('myapp'),
+    flags: Math.random()
+  });
+  </script>
+
+  <script src="firebase.js"></script>
+
+</body>
+</html>
